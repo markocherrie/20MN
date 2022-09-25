@@ -1,8 +1,10 @@
 # viz
 
+# load packages
 library(ggplot2)
 library(geomtextpath)
 
+# create dataframe
 time<-as.numeric(sample(1:40, 42, replace=TRUE))
 domain<-as.factor(rep(c("moving\n around", "public\n transport", "traffic and\n parking",
                         "streets\n and spaces", "natural\n space", "play and\n recreation",
@@ -11,13 +13,13 @@ domain<-as.factor(rep(c("moving\n around", "public\n transport", "traffic and\n 
                         "identity and\n belonging", "feeling\n safe", 
                         "care and\n maintenance", "influence and \nsense of control"),3))
 mode<-as.factor(rep(c("Walk", "Cycle", "Transit"),14))
-
 df <- data.frame(time, domain, mode)
 
-
+# test
 ggplot(df, aes(x = domain, y = time, color = domain, group=mode)) +
   geom_path(fill=NA)
   
+# plot
 library(dplyr)
 df %>%
   dplyr::arrange(domain) %>%
