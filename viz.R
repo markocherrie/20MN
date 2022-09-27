@@ -15,6 +15,10 @@ domain<-as.factor(rep(c("moving\n around", "public\n transport", "traffic and\n 
 mode<-as.factor(rep(c("Walk", "Cycle", "Transit"),14))
 df <- data.frame(time, domain, mode)
 
+# for colouring the text
+#mycolors<- c("red","blue","green","red","blue","green","red","blue","green",
+#             "red","blue","green","red","blue")
+
 # test
 ggplot(df, aes(x = domain, y = time, color = domain, group=mode)) +
   geom_path(fill=NA)
@@ -46,5 +50,7 @@ df %>%
         panel.grid.minor = element_blank(),
         strip.background = element_blank(),
         panel.border = element_blank(),
-        strip.text.x = element_text(size = 16))
+        strip.text.x = element_text(size = 16),
+        #axis.text.x = element_text(colour = mycolors)
+        )
 
