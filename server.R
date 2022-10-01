@@ -54,15 +54,16 @@ sp.na.omit <- function(x, margin=2) {
 # server file
 shinyServer(function(input, output) {
   
+  # data --- change this to local authority and nearby ones
+  Accesspoint<-readRDS("data/OSgreenspace/data/AccessPoint.rds")
+  Site<-readRDS("data/OSgreenspace/data/Site.rds")
+  
+  
+
 observe({
 
       # Create the map
       output$map <- renderLeaflet({
-        
-        # data --- change this to local authority and nearby ones
-        Accesspoint<-readRDS("data/OSgreenspace/data/AccessPoint.rds")
-        Site<-readRDS("data/OSgreenspace/data/Site.rds")
-        
         
           leaflet() %>%
           addProviderTiles(providers$Stamen.Toner)        %>%
