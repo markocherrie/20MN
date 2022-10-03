@@ -14,6 +14,9 @@ library(rgdal)
 library(DT)
 library(leaflet.extras)
 library(sf)
+# install.packages("hereR")
+library(hereR)
+set_key(Sys.getenv("HEREAPIKEY"))
 
 # load functions
 BING <- function(str){
@@ -112,6 +115,32 @@ if (!is.na(lat)){
       Siteswithinbufferandaccesspoints<-merge(Siteswithinbuffer, Accesspoint, by="id", all.x=T)
       Siteswithinbufferandaccesspoints <- st_zm(Siteswithinbufferandaccesspoints, drop = T, what = "ZM")
       
+      isolines <- isoline(
+        coords_wgs,
+        datetime = Sys.time(),
+        arrival = FALSE,
+        range = seq(20, 20, 20) * 60,
+        range_type = "time",
+        routing_mode = "fast",
+        transport_mode = "pedestrian",
+        traffic = TRUE,
+        optimize = "balanced",
+        consumption_model = NULL,
+        aggregate = FALSE,
+        url_only = FALSE
+      )%>% 
+      #mutate(name = paste0((range - 600) / 60," to ", range / 60, " mins"))
+      mutate(name = paste0("0 to ", range / 60, " mins"))
+      
+      
+      # Create a color palette 
+      iso_1.colors <- c("#CCCCCC", "#000000")
+      iso_1.pal <- colorFactor(iso_1.colors, isolines$range)
+      
+      # arrange so closest is top
+      isolines<-isolines %>% dplyr::arrange(range)
+      
+      
       ## map 2 is the red dot location
       #location<-as.data.frame(cbind(long=as.numeric(long), lat=as.numeric(lat)))
       #location<-SpatialPoints(cbind(as.numeric(long),as.numeric(lat)))
@@ -141,13 +170,29 @@ observe({
           
           #################
           mapit  %>%
-          addPolygons(data=Siteswithinbufferandaccesspoints,
+            addMarkers(lng=as.numeric(coords$long), lat=as.numeric(coords$lat)) %>% 
+            addPolygons(data=Siteswithinbufferandaccesspoints,
                       stroke=T,
                       weight=0.3,
                       smoothFactor = 0.2,
                       fillOpacity = 0.7,
                       popup=popup,
-                      color= ~pal(function.)) 
+                      color="green",
+                      #color= ~pal(function.),
+                      group = "Greenspace") %>%
+            addPolygons(data = isolines,
+                        fill=TRUE,
+                        fillColor = ~iso_1.pal(isolines$name),
+                        fillOpacity=0.35,
+                        stroke=TRUE,
+                        color = "black",
+                        weight=0.5,
+                        popup = isolines$range, 
+                        group="20MN")       %>%
+            # Layers control allows the user to turn layers on and off
+            addLayersControl(options = layersControlOptions(collapsed = T),
+                             overlayGroups = c("20MN", "Greenspace")
+          ) 
           
 }
 })

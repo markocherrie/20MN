@@ -16,7 +16,7 @@ isolines <- isoline(
   DT,
   datetime = Sys.time(),
   arrival = FALSE,
-  range = seq(5, 20, 5) * 60,
+  range = seq(20, 20, 20) * 60,
   range_type = "time",
   routing_mode = "fast",
   transport_mode = "pedestrian",
@@ -25,14 +25,19 @@ isolines <- isoline(
   consumption_model = NULL,
   aggregate = FALSE,
   url_only = FALSE
-)
+) %>%
+  #mutate(name = paste0((range - 600) / 60," to ", range / 60, " mins"))
+  mutate(name = paste0("0 to ", range / 60, " mins"))
+
+# Convert to shapefile
+isolines <- as(isolines, "Spatial")
 
 # Create a color palette 
-iso_1.colors <- c("#CCCCCC", "#000000")
-iso_1.pal <- colorFactor(iso_1.colors, isolines$range)
+iso_1.colors <- c("#9e9ac8", "#006d2c")
+iso_1.pal <- colorFactor(iso_1.colors, isolines$name)
 
 # arrnage so closest is top
-isolines<-isolines %>% dplyr::arrange(-range)
+#isolines<-isolines %>% dplyr::arrange(-range)
 
 
 library(leaflet)
@@ -43,10 +48,21 @@ leaflet() %>%
   
   # 
   addPolygons(data = isolines,
-              fillColor = ~iso_1.pal(isolines$range),
+              #fill=TRUE,
+              fillColor = ~iso_1.pal(isolines$name),
               fillOpacity=0.35,
               stroke=TRUE,
               color = "black",
               weight=0.5,
-              popup = isolines$range
-  ) 
+              popup = isolines$range, 
+              group="20MN") %>%
+  addLegend(position="bottomleft",
+            values = isolines$name,
+            pal = iso_1.pal, 
+            opacity = 0.35,
+            title = "Your 20 minute neighbourhood",
+            group = "20MN") %>%
+  
+  # Layers control allows the user to turn layers on and off
+  addLayersControl(options = layersControlOptions(collapsed = F),
+                   overlayGroups = c("20MN"))
