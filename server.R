@@ -69,7 +69,7 @@ observe({
       output$map <- renderLeaflet({
         
           leaflet() %>%
-          addProviderTiles(providers$Stamen.Toner)        %>%
+          addProviderTiles(providers$Stamen.TonerLite)        %>%
           addScaleBar(position = c("bottomleft"))         %>%
           addFullscreenControl()                          %>%
           setView(lng =-4.2026, lat = 56.4907, zoom = 7) 
@@ -108,12 +108,6 @@ if (!is.na(lat)){
                              crs = 4326, dim = "XY")
       coords_BNG <- st_transform(coords_wgs, 27700)
       coords_BNG_2km <- st_buffer(coords_BNG, 2000)
-      Siteswithinbuffer<-st_intersection(coords_BNG_2km,Site)
-      
-      Accesspoint$geometry<-NULL
-      Siteswithinbuffer<-Siteswithinbuffer %>% st_transform(., 4326)
-      Siteswithinbufferandaccesspoints<-merge(Siteswithinbuffer, Accesspoint, by="id", all.x=T)
-      Siteswithinbufferandaccesspoints <- st_zm(Siteswithinbufferandaccesspoints, drop = T, what = "ZM")
       
       isolines <- isoline(
         coords_wgs,
@@ -133,6 +127,13 @@ if (!is.na(lat)){
       mutate(name = paste0("0 to ", range / 60, " mins"))
       
       
+      isolines_BNG <- st_transform(isolines, 27700)
+      Siteswithinbuffer<-st_intersection(isolines_BNG, Site)
+      Accesspoint$geometry<-NULL
+      Siteswithinbuffer<-Siteswithinbuffer %>% st_transform(., 4326)
+      Siteswithinbufferandaccesspoints<-merge(Siteswithinbuffer, Accesspoint, by="id", all.x=T)
+      Siteswithinbufferandaccesspoints <- st_zm(Siteswithinbufferandaccesspoints, drop = T, what = "ZM")
+
       # Create a color palette 
       iso_1.colors <- c("#CCCCCC", "#000000")
       iso_1.pal <- colorFactor(iso_1.colors, isolines$range)
@@ -161,24 +162,24 @@ observe({
           #################
           mapit  %>%
             addMarkers(lng=as.numeric(coords$long), lat=as.numeric(coords$lat)) %>% 
-            addPolygons(data=Siteswithinbufferandaccesspoints,
-                      stroke=T,
-                      weight=0.3,
-                      smoothFactor = 0.2,
-                      fillOpacity = 0.7,
-                      popup=popup,
-                      color="green",
-                      #color= ~pal(function.),
-                      group = "Greenspace") %>%
             addPolygons(data = isolines,
                         fill=TRUE,
                         fillColor = ~iso_1.pal(isolines$name),
-                        fillOpacity=0.35,
+                        fillOpacity=0.6,
                         stroke=TRUE,
                         color = "black",
                         weight=0.5,
                         popup = isolines$range, 
                         group="20MN")       %>%
+            addPolygons(data=Siteswithinbufferandaccesspoints,
+                        stroke=T,
+                        weight=0.3,
+                        smoothFactor = 0.2,
+                        fillOpacity = 0.5,
+                        popup=popup,
+                        color="green",
+                        #color= ~pal(function.),
+                        group = "Greenspace") %>%
             # Layers control allows the user to turn layers on and off
             addLayersControl(options = layersControlOptions(collapsed = T),
                              overlayGroups = c("20MN", "Greenspace")
@@ -188,12 +189,30 @@ observe({
   
   
   tb<-as.data.frame(table(Siteswithinbufferandaccesspoints$function.))
+  if(nrow(tb)==0){
+    tb<-data.frame (Type  = c(""),
+                    Freq = c(""))
+    
+  }
   colnames(tb)<-c("Type", "Freq")
-  tb<-merge(tb, ScotlandComp, by=c("Type"))
-
+  tb<-merge(tb, ScotlandComp, by=c("Type"), all.y=T)
+  tb$Freq.x[is.na(tb$Freq.x)]<-0
   
-  output$stats <- renderText({ 
-    paste0("You have ", tb$Freq.x[1]," ", tb$Type[1])
+  output$stats <- renderUI({ 
+    
+    title<-"<h2>Greenspaces</h2>"
+    str1<-paste0(tb$Freq.x[1]," ", tb$Type[1])
+    str2<-paste0(tb$Freq.x[2]," ", tb$Type[2])
+    str3<-paste0(tb$Freq.x[3]," ", tb$Type[3])
+    str4<-paste0(tb$Freq.x[4]," ", tb$Type[4])
+    str5<-paste0(tb$Freq.x[5]," ", tb$Type[5])
+    str6<-paste0(tb$Freq.x[6]," ", tb$Type[6])
+    str7<-paste0(tb$Freq.x[7]," ", tb$Type[7])
+    str8<-paste0(tb$Freq.x[8]," ", tb$Type[8])
+    str9<-paste0(tb$Freq.x[9]," ", tb$Type[9])
+    str10<-paste0(tb$Freq.x[10]," ", tb$Type[10])
+    
+    HTML(paste("<br/>",title, str1, str2, str3,str4, str5, str6,str7, str8, str9, str10, sep = '<br/>'))
     })
 })
       

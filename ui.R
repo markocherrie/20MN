@@ -79,7 +79,7 @@ shinyUI(fluidPage(
   mainPanel(
     tabsetPanel(type = "tabs",
                 tabPanel("Map", shinycssloaders::withSpinner(leafletOutput("map"))),
-                tabPanel("Stats", textOutput("stats")),
+                tabPanel("Stats", htmlOutput("stats")),
                 tabPanel("Graph", plotOutput("graph"))
                 #tabPanel("How to use", includeHTML("howtouse.html")),
                 #tabPanel("Change over time", leafletOutput("change")),
