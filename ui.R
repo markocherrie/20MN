@@ -32,10 +32,10 @@ shinyUI(fluidPage(
   
   headerPanel(
     fluidRow(
-      column(11, h1("20 Minute Neighbourhoods in Scotland", 
+      column(11, h1("What's my neighbourhood like?", 
                     style = "font-family: 'Roboto Slab', cursive;
      font-weight: bold; font-size: 39px")))
-    , windowTitle = "20 Minute Neighbourhoods in Scotland"),
+    , windowTitle = "What's my neighbourhood like?"),
   
   
   ### CRESH favicon
@@ -65,7 +65,9 @@ shinyUI(fluidPage(
   )),
   sidebarPanel( 
     strong("Description"),
-    helpText("This application allows you to view your '20 minute neighbourhood'"),
+    helpText("This is a tool that helps you to know a bit more about your neighbourhood (within a 20 minute walking distance from you). 
+              Once you have an idea of the kinds of amenities around you, you might feel more equipped to answer questions on
+              how well they serve you and fill out a Place Standard assessment - https://www.placestandard.scot/"),
     div(style="display:inline-block", textInput("str", label =("Enter an Area of Interest"), value = "")),
     div(style="display:inline-block",actionButton("goButton", "Enter"))
     # adding the new div tag to the sidebsar            
@@ -77,6 +79,7 @@ shinyUI(fluidPage(
   mainPanel(
     tabsetPanel(type = "tabs",
                 tabPanel("Map", shinycssloaders::withSpinner(leafletOutput("map"))),
+                tabPanel("Stats", textOutput("stats")),
                 tabPanel("Graph", plotOutput("graph"))
                 #tabPanel("How to use", includeHTML("howtouse.html")),
                 #tabPanel("Change over time", leafletOutput("change")),

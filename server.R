@@ -60,7 +60,7 @@ shinyServer(function(input, output) {
   # data --- change this to local authority and nearby ones
   Accesspoint<-readRDS("data/OSgreenspace/data/AccessPoint.rds")
   Site<-readRDS("data/OSgreenspace/data/Site.rds")
-  
+  ScotlandComp<-read.csv("data/OSgreenspace/ScotlandFreq.csv")
   
 
 observe({
@@ -100,7 +100,7 @@ if (!is.na(lat)){
         mapit %>% 
         setView(lng =  long, lat = lat, zoom = 14)
 } else {
-        mapit  %>% setView(lng =-4.2026, lat = 56.4907, zoom = 7) 
+      mapit  %>% setView(lng =-4.2026, lat = 56.4907, zoom = 7) 
 } 
       
       coords<-data.frame(lat,long)
@@ -140,16 +140,6 @@ if (!is.na(lat)){
       # arrange so closest is top
       isolines<-isolines %>% dplyr::arrange(range)
       
-      
-      ## map 2 is the red dot location
-      #location<-as.data.frame(cbind(long=as.numeric(long), lat=as.numeric(lat)))
-      #location<-SpatialPoints(cbind(as.numeric(long),as.numeric(lat)))
-      #proj4string(location) <- CRS("+proj=longlat +datum=WGS84")
-      #map<-spTransform(map, proj4string(geog))
-      
-      # Here we are getting the local authority location
-      #location<-over(map, geog , fn = NULL)
-      #location2<-location[1,2]
       
       ###################################################################################################################    
       
@@ -194,8 +184,20 @@ observe({
                              overlayGroups = c("20MN", "Greenspace")
           ) 
           
-}
+        }
+  
+  
+  tb<-as.data.frame(table(Siteswithinbufferandaccesspoints$function.))
+  colnames(tb)<-c("Type", "Freq")
+  tb<-merge(tb, ScotlandComp, by=c("Type"))
+
+  
+  output$stats <- renderText({ 
+    paste0("You have ", tb$Freq.x[1]," ", tb$Type[1])
+    })
 })
+      
+
       
 # If there is no proper geocode then clear the map 
 }else{
