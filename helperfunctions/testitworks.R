@@ -1,9 +1,28 @@
+library(shiny)
+library(leaflet)
+require(RCurl)
+require(RJSONIO)
+require(plyr)
+library(rgdal)
+library(rgeos)
+library(dplyr)
+library(gtools)
+library(jsonlite)
+library(mongolite)
+library(rgdal)
+library(DT)
+library(leaflet.extras)
+library(sf)
+# install.packages("hereR")
+library(hereR)
+library(geomtextpath)
+
 Site<-readRDS("data/OSgreenspace/data/Site.rds")
 Accesspoint<-readRDS("data/OSgreenspace/data/AccessPoint.rds")
 ScotlandComp<-read.csv("data/OSgreenspace/ScotlandFreq.csv")
 
-lat = 55.893275
-long = -3.318146
+lat = 55.9030598
+long = -3.1952914
 
 coords<-data.frame(lat,long)
 coords_wgs <- st_as_sf(coords, coords = c("long", "lat"),
@@ -52,21 +71,27 @@ tb<-as.data.frame(table(Siteswithinbufferandaccesspoints$function.))
 colnames(tb)<-c("Type", "Freq")
 tb<-merge(tb, ScotlandComp, by=c("Type"), all.y=T)
 tb$Freq.x[is.na(tb$Freq.x)]<-0
+tb$Type<-as.character(tb$Type)
+tb$Type[tb$Type=="Allotments Or Community Growing Spaces"]<-"Allotments"
+tb$Type[tb$Type=="Public Park Or Garden"]<-"Public Park/Garden"
+tb$Perc.y<-round(tb$Freq.x/sum(tb$Freq.x)*100)
+tb$Perccomp<-tb$Perc.y/tb$Perc
+benchdown<-ceiling(max(tb$Perccomp)*0.75)
+benchup<-ceiling(max(tb$Perccomp)*1.25)
 
-
-tb[tb$Freq.x=0]<-0.001
+#tb[tb$Freq.x=0]<-0.001
 # plot
 library(dplyr)
 
 tb %>%
   dplyr::arrange(Type) %>%
-  ggplot(., aes(x = Type, y = Freq.x)) +
+  ggplot(., aes(x = Type, y = Perccomp, group=1)) +
   geom_polygon(fill="grey", alpha = 0.6)+
   geom_point(color="black")+
   coord_curvedpolar()+ 
-  geom_texthline(yintercept = 1, label = "1", 
+  geom_texthline(yintercept = benchdown, label = paste0(benchdown), 
                  hjust = 0, vjust = -0.2, color = "grey")+
-  geom_texthline(yintercept = 2, label = "2", 
+  geom_texthline(yintercept = benchup, label = paste0(benchup), 
                  hjust = 0, vjust = -0.2, color = "grey")+
   geom_texthline(yintercept = 3, label = "3", 
                 hjust = 0, vjust = -0.2, color = "grey") +

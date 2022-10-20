@@ -16,11 +16,13 @@ library(leaflet.extras)
 library(sf)
 # install.packages("hereR")
 library(hereR)
+library(geomtextpath)
 set_key(Sys.getenv("HEREAPIKEY"))
+Sys.getenv("R_TEST")
 
 # load functions
 BING <- function(str){
-  u <- URLencode(paste0("http://dev.virtualearth.net/REST/v1/Locations?q=", str, "&maxResults=1&key=Apo4HssxpmYvVbDEUA464pmX5Y30xsQNlJ4pES6Z6D056puS63D90MLZlQ1yVeTG"))
+  u <- URLencode(paste0("http://dev.virtualearth.net/REST/v1/Locations?q=", str, "&maxResults=1&key=",Sys.getenv(c("BINGKEY"))))
   d <- getURL(u)
   j <- RJSONIO::fromJSON(d,simplify = FALSE) 
   if (j$resourceSets[[1]]$estimatedTotal > 0) {
@@ -165,12 +167,12 @@ observe({
             addPolygons(data = isolines,
                         fill=TRUE,
                         fillColor = ~iso_1.pal(isolines$name),
-                        fillOpacity=0.6,
+                        fillOpacity=0.8,
                         stroke=TRUE,
                         color = "black",
                         weight=0.5,
                         popup = isolines$range, 
-                        group="20MN")       %>%
+                        group="20 minute walking distance")       %>%
             addPolygons(data=Siteswithinbufferandaccesspoints,
                         stroke=T,
                         weight=0.3,
@@ -182,7 +184,7 @@ observe({
                         group = "Greenspace") %>%
             # Layers control allows the user to turn layers on and off
             addLayersControl(options = layersControlOptions(collapsed = T),
-                             overlayGroups = c("20MN", "Greenspace")
+                             overlayGroups = c("20 minute walking distance", "Greenspace")
           ) 
           
         }
@@ -197,10 +199,17 @@ observe({
   colnames(tb)<-c("Type", "Freq")
   tb<-merge(tb, ScotlandComp, by=c("Type"), all.y=T)
   tb$Freq.x[is.na(tb$Freq.x)]<-0
+  tb$Type<-as.character(tb$Type)
+  tb$Type[tb$Type=="Allotments Or Community Growing Spaces"]<-"Allotments"
+  tb$Type[tb$Type=="Public Park Or Garden"]<-"Public Park/Garden"
+  tb$Perc.y<-round(tb$Freq.x/sum(tb$Freq.x)*100)
+  tb$Perccomp<-tb$Perc.y/tb$Perc
+  benchdown<-floor(max(tb$Perccomp)*0.75)
+  benchup<-ceiling(max(tb$Perccomp)*1.25)
   
-  output$stats <- renderUI({ 
+output$stats <- renderUI({ 
     
-    title<-"<h2>Greenspaces</h2>"
+    title<-"<h4>Greenspace</h4>"
     str1<-paste0(tb$Freq.x[1]," ", tb$Type[1])
     str2<-paste0(tb$Freq.x[2]," ", tb$Type[2])
     str3<-paste0(tb$Freq.x[3]," ", tb$Type[3])
@@ -212,8 +221,45 @@ observe({
     str9<-paste0(tb$Freq.x[9]," ", tb$Type[9])
     str10<-paste0(tb$Freq.x[10]," ", tb$Type[10])
     
-    HTML(paste("<br/>",title, str1, str2, str3,str4, str5, str6,str7, str8, str9, str10, sep = '<br/>'))
+    HTML(paste(title, str1, str2, str3,str4, str5, str6,str7, str8, str9, str10, sep = '<br/>'))
     })
+
+output$graph <- renderPlot({
+  
+  tb %>%
+    dplyr::arrange(Type) %>%
+    ggplot(., aes(x = Type, y = Perccomp, group=1)) +
+    geom_polygon(fill="grey", alpha = 0.6)+
+    geom_point(color="black")+
+    coord_curvedpolar()+ 
+    geom_texthline(yintercept = benchdown, label = ifelse(benchdown>1, paste0(benchdown, " times higher"), "Similar"), 
+                   hjust = 0, vjust = -0.2, color = "grey")+
+    geom_texthline(yintercept = benchup, label = paste0(benchup, " times higher"), 
+                   hjust = 0, vjust = -0.2, color = "grey")+
+    #geom_texthline(yintercept = 3, label = "3", 
+    #               hjust = 0, vjust = -0.2, color = "grey") +
+    theme_bw() +
+    #facet_wrap(~ mode)+
+    theme(legend.position = "none",
+          axis.text.y=element_blank(),
+          axis.title.y=element_blank(),
+          axis.title.x=element_blank(),
+          axis.ticks = element_blank(),
+          panel.grid  = element_blank(),
+          plot.background = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          strip.background = element_blank(),
+          panel.border = element_blank(),
+          strip.text.x = element_text(size = 16),
+          #axis.text.x = element_text(colour = mycolors)
+    )+
+    labs(title="Greenspace (compared to Scottish average)")
+  
+  
+})
+
+
 })
       
 

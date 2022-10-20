@@ -65,10 +65,9 @@ shinyUI(fluidPage(
   )),
   sidebarPanel( 
     strong("Description"),
-    helpText("This is a tool that helps you to know a bit more about your neighbourhood (within a 20 minute walking distance from you). 
-              Once you have an idea of the kinds of amenities around you, you might feel more equipped to answer questions on
-              how well they serve you and fill out a Place Standard assessment - https://www.placestandard.scot/"),
-    div(style="display:inline-block", textInput("str", label =("Enter an Area of Interest"), value = "")),
+    helpText("Ever wondered what's available close to where you live. This tool helps people living in Scotland
+             to get the most out of their neighbourhood amenities."),
+    div(style="display:inline-block", textInput("str", label =("Enter location"), value = "")),
     div(style="display:inline-block",actionButton("goButton", "Enter"))
     # adding the new div tag to the sidebsar            
     ),
@@ -78,7 +77,7 @@ shinyUI(fluidPage(
   tags$br(),
   mainPanel(
     tabsetPanel(type = "tabs",
-                tabPanel("Map", shinycssloaders::withSpinner(leafletOutput("map"))),
+                tabPanel("Map", shinycssloaders::withSpinner(leafletOutput("map", height = "100%"))),
                 tabPanel("Stats", htmlOutput("stats")),
                 tabPanel("Graph", plotOutput("graph"))
                 #tabPanel("How to use", includeHTML("howtouse.html")),
