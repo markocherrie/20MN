@@ -2,14 +2,14 @@
 library(shiny)
 library(leaflet)
 require(RCurl)
-require(RJSONIO)
+#require(RJSONIO)
 require(plyr)
 library(rgdal)
 library(rgeos)
 library(dplyr)
 library(gtools)
-library(jsonlite)
-library(mongolite)
+#library(jsonlite)
+#library(mongolite)
 library(rgdal)
 library(DT)
 library(leaflet.extras)
@@ -202,6 +202,9 @@ observe({
   tb$Type<-as.character(tb$Type)
   tb$Type[tb$Type=="Allotments Or Community Growing Spaces"]<-"Allotments"
   tb$Type[tb$Type=="Public Park Or Garden"]<-"Public Park/Garden"
+  
+  # Percentage .... change to area????
+  # rather than scotland - compare it to scottish datazones
   tb$Perc.y<-round(tb$Freq.x/sum(tb$Freq.x)*100)
   tb$Perccomp<-tb$Perc.y/tb$Perc
   benchdown<-floor(max(tb$Perccomp)*0.75)
