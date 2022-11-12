@@ -5,31 +5,49 @@ library(ggplot2)
 library(geomtextpath)
 
 # create dataframe
-time<-as.numeric(sample(1:40, 42, replace=TRUE))
+time1<-as.numeric(sample(1:40, 14, replace=TRUE))
+time2<-as.numeric(time1*0.75)
+time3<-as.numeric(time1*0.50)
+time4<-as.numeric(sample(1:40, 14, replace=TRUE))
+time5<-as.numeric(sample(1:40, 14, replace=TRUE))
+time<-c(time1, time2, time3, time4, time5)
+
 domain<-as.factor(rep(c("moving\n around", "public\n transport", "traffic and\n parking",
                         "streets\n and spaces", "natural\n space", "play and\n recreation",
                         "facilities\n and amenities", "work and\n economy", 
                         "housing\n and community", "social\n contact", 
                         "identity and\n belonging", "feeling\n safe", 
-                        "care and\n maintenance", "influence and \nsense of control"),3))
-mode<-as.factor(rep(c("Walk", "Cycle", "Transit"),14))
-df <- data.frame(time, domain, mode)
+                        "care and\n maintenance", "influence and \nsense of control"),5))
+mode<-as.factor(c(rep(c("Walk"),14),
+                  rep(c("Walk"),14),
+                   rep(c("Walk"),14),
+                    rep(c("Cyle"),14),
+                     rep(c("Transit"),14)))
+
+speed<-as.factor(c(rep(c("Walk Slow"),14),
+                  rep(c("Walk Moderate"),14),
+                  rep(c("Walk Fast"),14),
+                  rep(c("Cyle"),14),
+                  rep(c("Transit"),14)))
+
+
+df <- data.frame(time, domain, mode, speed)
 
 # for colouring the text
 #mycolors<- c("red","blue","green","red","blue","green","red","blue","green",
 #             "red","blue","green","red","blue")
 
 # test
-ggplot(df, aes(x = domain, y = time, color = domain, group=mode)) +
-  geom_path(fill=NA)
+#ggplot(df, aes(x = domain, y = time, color = domain, group=mode)) +
+#  geom_path(fill=NA)
   
 # plot
 library(dplyr)
 df %>%
   dplyr::arrange(domain) %>%
-  ggplot(., aes(x = domain, y = time, group=mode)) +
-  geom_polygon(fill="grey", alpha = 0.6)+
-  geom_point(color="black")+
+  ggplot(., aes(x = domain, y = time, group=speed, color=speed)) +
+  geom_polygon(aes(fill = speed, group = speed, alpha = 0.6))+
+  #geom_point(color="grey")+
   coord_curvedpolar()+ 
   geom_texthline(yintercept = 10, label = "10 minutes", 
                  hjust = 0, vjust = -0.2, color = "grey")+
