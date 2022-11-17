@@ -31,7 +31,7 @@ isolines <- isoline(
   coords_wgs,
   datetime = Sys.time(),
   arrival = FALSE,
-  range = seq(20, 20, 20) * 60,
+  range = seq(10, 30, 10) * 60,
   range_type = "time",
   routing_mode = "fast",
   transport_mode = "pedestrian",

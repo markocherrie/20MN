@@ -17,6 +17,7 @@ library(sf)
 # install.packages("hereR")
 library(hereR)
 library(geomtextpath)
+#readRenviron("~/.Renviron")
 set_key(Sys.getenv("HEREAPIKEY"))
 Sys.getenv("R_TEST")
 
