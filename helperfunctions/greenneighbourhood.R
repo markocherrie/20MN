@@ -24,16 +24,16 @@ Accesspoint<-readRDS("data/OSgreenspace/data/AccessPoint.rds")
 ScotlandComp<-read.csv("data/OSgreenspace/ScotlandFreq.csv")
 
 # centre of town
-55.9533
--3.1883
+#55.9533
+#-3.1883
 
 # home
-55.893863
--3.316051
+#55.893863
+#-3.316051
 
 # old home
-55.935408, 
--3.226440
+#55.935408, 
+#-3.226440
 
 greennearme<- function(lat, long){
 lat = lat
