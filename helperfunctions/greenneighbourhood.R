@@ -74,28 +74,40 @@ Siteswithinbuffer1$geometry<-NULL
 Siteswithinbuffer2$geometry<-NULL
 Siteswithinbuffer3$geometry<-NULL
 
-
+n<-Siteswithinbuffer1 %>%
+  count(function.)
 Siteswithinbuffer1<-as.data.frame(unique(Siteswithinbuffer1[,c("function.")]))
 Siteswithinbuffer1$time<-10
 colnames(Siteswithinbuffer1)[1]<-"GStypes"
 
+n2<-Siteswithinbuffer2 %>%
+  count(function.)
 Siteswithinbuffer2<-as.data.frame(unique(Siteswithinbuffer2[,c("function.")]))
 Siteswithinbuffer2$time<-20
 colnames(Siteswithinbuffer2)[1]<-"GStypes"
 
+n3<-Siteswithinbuffer3 %>%
+  count(function.)
 Siteswithinbuffer3<-as.data.frame(unique(Siteswithinbuffer3[,c("function.")]))
 Siteswithinbuffer3$time<-30
 colnames(Siteswithinbuffer3)[1]<-"GStypes"
+
 
 Siteswithinbuffer2 <- Siteswithinbuffer2[!Siteswithinbuffer2$GStypes %in% unique(Siteswithinbuffer1$GStypes),]
 Siteswithinbuffer3 <- Siteswithinbuffer3[!Siteswithinbuffer3$GStypes %in% unique(Siteswithinbuffer2$GStypes),]
 Siteswithinbuffer3 <- Siteswithinbuffer3[!Siteswithinbuffer3$GStypes %in% unique(Siteswithinbuffer1$GStypes),]
 
+Siteswithinbuffer1<-merge(Siteswithinbuffer1, n, by.x="GStypes", by.y="function.", all.x=T)
+Siteswithinbuffer2<-merge(Siteswithinbuffer2, n2, by.x="GStypes", by.y="function.", all.x=T)
+Siteswithinbuffer3<-merge(Siteswithinbuffer3, n3, by.x="GStypes", by.y="function.", all.x=T)
+
 
 dfadd<-rbind(Siteswithinbuffer1, Siteswithinbuffer2, Siteswithinbuffer3)
 df<-merge(df, dfadd, by="GStypes", all.x=T)
 df$time[is.na(df$time)]<-"40"
-
+# could change this to within 5km....
+df$n[is.na(df$n)]<-"1"
+df$n<-as.numeric(df$n)
 
 
 #Accesspoint$geometry<-NULL
@@ -132,19 +144,19 @@ df$GStypes[df$GStypes=="Public Park Or Garden"]<-"Public Park/Garden"
 
 #tb[tb$Freq.x=0]<-0.001
 # plot
-rowadd<-c("Your location", "0")
+rowadd<-c("Your location", "0", "1")
 df<-rbind(df, rowadd)
 df$time<-as.numeric(df$time)
 
 
-
-
+#### VIz
 library(dplyr)
 df %>%
   dplyr::arrange(GStypes) %>%
   ggplot(., aes(x = GStypes, y = time, group=1)) +
+  # take out size=n if want the original
+  geom_point(aes(size = n), color="black")+
   geom_polygon(fill="#008000", alpha = 0.6)+
-  geom_point(color="black")+
   coord_curvedpolar()+ 
   geom_texthline(yintercept = 10, label = "10 minutes", 
                  hjust = 0, vjust = -0.2, color = "grey")+
