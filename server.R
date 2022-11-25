@@ -110,7 +110,7 @@ shinyServer(function(input, output) {
       coords_wgs <- st_as_sf(coords, coords = c("long", "lat"),
                              crs = 4326, dim = "XY")
       coords_BNG <- st_transform(coords_wgs, 27700)
-      coords_BNG_2km <- st_buffer(coords_BNG, 2000)
+      #coords_BNG_2km <- st_buffer(coords_BNG, 2000)
       
       isolines <- isoline(
         coords_wgs,
@@ -129,54 +129,107 @@ shinyServer(function(input, output) {
         #mutate(name = paste0((range - 600) / 60," to ", range / 60, " mins"))
         mutate(name = paste0("0 to ", range / 60, " mins"))
       
-      
+      isolines_20<-isolines[2,]
+      isolines_20_BNG <- st_transform(isolines_20, 27700)
       isolines_BNG <- st_transform(isolines, 27700)
       
-      # processing
-      Siteswithinbuffer<-st_intersection(isolines_BNG, Site)
+      
+      #### for the graph
+      
+      df<-data.frame(GStypes=unique(Site$function.))
+      
+      Siteswithinbuffer1<-st_intersection(isolines_BNG[1,], Site)
+      Siteswithinbuffer2<-st_intersection(isolines_BNG[2,], Site)
+      Siteswithinbuffer3<-st_intersection(isolines_BNG[3,], Site)
+      Siteswithinbuffer2 <- Siteswithinbuffer2[!Siteswithinbuffer2$id.1 %in% unique(Siteswithinbuffer1$id.1),]
+      Siteswithinbuffer3 <- Siteswithinbuffer3[!Siteswithinbuffer3$id.1 %in% unique(Siteswithinbuffer2$id.1),]
+      
+      Siteswithinbuffer1$geometry<-NULL
+      Siteswithinbuffer2$geometry<-NULL
+      Siteswithinbuffer3$geometry<-NULL
+      
+      n<-Siteswithinbuffer1 %>%
+        count(function.)
+      Siteswithinbuffer1<-as.data.frame(unique(Siteswithinbuffer1[,c("function.")]))
+      Siteswithinbuffer1$time<-10
+      colnames(Siteswithinbuffer1)[1]<-"GStypes"
+      
+      n2<-Siteswithinbuffer2 %>%
+        count(function.)
+      Siteswithinbuffer2<-as.data.frame(unique(Siteswithinbuffer2[,c("function.")]))
+      Siteswithinbuffer2$time<-20
+      colnames(Siteswithinbuffer2)[1]<-"GStypes"
+      
+      n3<-Siteswithinbuffer3 %>%
+        count(function.)
+      Siteswithinbuffer3<-as.data.frame(unique(Siteswithinbuffer3[,c("function.")]))
+      Siteswithinbuffer3$time<-30
+      colnames(Siteswithinbuffer3)[1]<-"GStypes"
+      
+      
+      Siteswithinbuffer2 <- Siteswithinbuffer2[!Siteswithinbuffer2$GStypes %in% unique(Siteswithinbuffer1$GStypes),]
+      Siteswithinbuffer3 <- Siteswithinbuffer3[!Siteswithinbuffer3$GStypes %in% unique(Siteswithinbuffer2$GStypes),]
+      Siteswithinbuffer3 <- Siteswithinbuffer3[!Siteswithinbuffer3$GStypes %in% unique(Siteswithinbuffer1$GStypes),]
+      
+      Siteswithinbuffer1<-merge(Siteswithinbuffer1, n, by.x="GStypes", by.y="function.", all.x=T)
+      Siteswithinbuffer2<-merge(Siteswithinbuffer2, n2, by.x="GStypes", by.y="function.", all.x=T)
+      Siteswithinbuffer3<-merge(Siteswithinbuffer3, n3, by.x="GStypes", by.y="function.", all.x=T)
+      
+      
+      dfadd<-rbind(Siteswithinbuffer1, Siteswithinbuffer2, Siteswithinbuffer3)
+      df<-merge(df, dfadd, by="GStypes", all.x=T)
+      df$time[is.na(df$time)]<-"40"
+      # could change this to within 5km....
+      df$n[is.na(df$n)]<-"1"
+      df$n<-as.numeric(df$n)
+      df$GStypes[df$GStypes=="Allotments Or Community Growing Spaces"]<-"Allotments"
+      df$GStypes[df$GStypes=="Public Park Or Garden"]<-"Public Park/Garden"
+      rowadd<-c("Your location", "0", "1")
+      df<-rbind(df, rowadd)
+      df$time<-as.numeric(df$time)
+
+      # For the map
+      Siteswithinbuffer_20<-st_intersection(isolines_20_BNG, Site)
       Accesspoint$geometry<-NULL
-      Siteswithinbuffer<-Siteswithinbuffer %>% st_transform(., 4326)
-      Siteswithinbufferandaccesspoints<-merge(Siteswithinbuffer, Accesspoint, by="id", all.x=T)
-      Siteswithinbufferandaccesspoints <- st_zm(Siteswithinbufferandaccesspoints, drop = T, what = "ZM")
+      Siteswithinbuffer_20<-Siteswithinbuffer_20 %>% st_transform(., 4326)
+      Siteswithinbufferandaccesspoints_20<-merge(Siteswithinbuffer_20, Accesspoint, by="id", all.x=T)
+      Siteswithinbufferandaccesspoints_20 <- st_zm(Siteswithinbufferandaccesspoints_20, drop = T, what = "ZM")
       
       # Create a color palette 
-      iso_1.pal <- colorFactor("Greys", isolines$range)
+      iso_1.pal <- colorFactor("Reds", isolines$range)
       
       
       # arrange so closest is top
       isolines<-isolines %>% dplyr::arrange(-range)
+      isolines_line = st_cast(isolines,"LINESTRING")
       
       
-      ###################################################################################################################    
+###################################################################################################################    
       
-      observe({    
+observe({    
         if(!is.na(coords_BNG)){
           mapit  %>% clearShapes() %>% clearMarkers()
           
           ###################
-          pal <- colorFactor(palette = 'Set1', domain = Siteswithinbufferandaccesspoints$function.) 
+          pal <- colorFactor(palette = 'Set1', domain = Siteswithinbufferandaccesspoints_20$function.) 
           
           # calculate area of spatial polygons sf object
-          Siteswithinbufferandaccesspoints$area <- st_area(Siteswithinbufferandaccesspoints)
-          Siteswithinbufferandaccesspoints <- arrange(Siteswithinbufferandaccesspoints, -area)
+          Siteswithinbufferandaccesspoints_20$area <- st_area(Siteswithinbufferandaccesspoints_20)
+          Siteswithinbufferandaccesspoints_20 <- arrange(Siteswithinbufferandaccesspoints_20, -area)
           
           ### superscript in leaflet
           popup <- 
-            (paste0(Siteswithinbufferandaccesspoints$function.))
+            (paste0(Siteswithinbufferandaccesspoints_20$function.))
           
           #################
           mapit  %>%
             addMarkers(lng=as.numeric(coords$long), lat=as.numeric(coords$lat)) %>% 
-            addPolygons(data = isolines,
-                        fill=TRUE,
-                        fillColor = ~iso_1.pal(isolines$range),
-                        fillOpacity=0.5,
-                        stroke=TRUE,
-                        color = "black",
-                        weight=0.5,
-                        popup = isolines$range, 
-                        group="20 minute walking distance") %>%
-            addPolygons(data=Siteswithinbufferandaccesspoints,
+            addPolylines(data = isolines_line[2,],
+                         color = "red",
+                         weight=4,
+                         popup = isolines$range, 
+                         group="20 minute walking distance") %>%
+            addPolygons(data=Siteswithinbufferandaccesspoints_20,
                         stroke=T,
                         weight=0.3,
                         smoothFactor = 0.2,
@@ -193,11 +246,11 @@ shinyServer(function(input, output) {
         }
         
         
-        tb<-as.data.frame(table(Siteswithinbufferandaccesspoints$function.))
+# For the STATS
+        tb<-as.data.frame(table(Siteswithinbufferandaccesspoints_20$function.))
         if(nrow(tb)==0){
           tb<-data.frame (Type  = c(""),
                           Freq = c(""))
-          
         }
         colnames(tb)<-c("Type", "Freq")
         tb<-merge(tb, ScotlandComp, by=c("Type"), all.y=T)
@@ -205,15 +258,12 @@ shinyServer(function(input, output) {
         tb$Type<-as.character(tb$Type)
         tb$Type[tb$Type=="Allotments Or Community Growing Spaces"]<-"Allotments"
         tb$Type[tb$Type=="Public Park Or Garden"]<-"Public Park/Garden"
-        
-        # Percentage .... change to area????
-        # rather than scotland - compare it to scottish datazones
         tb$Perc.y<-round(tb$Freq.x/sum(tb$Freq.x)*100)
         tb$Perccomp<-tb$Perc.y/tb$Perc
         benchdown<-floor(max(tb$Perccomp)*0.75)
         benchup<-ceiling(max(tb$Perccomp)*1.25)
         
-        output$stats <- renderUI({ 
+output$stats <- renderUI({ 
           
           title<-"<h4>Greenspace</h4>"
           str1<-paste0(tb$Freq.x[1]," ", tb$Type[1])
@@ -229,46 +279,46 @@ shinyServer(function(input, output) {
           
           HTML(paste(title, str1, str2, str3,str4, str5, str6,str7, str8, str9, str10, sep = '<br/>'))
         })
+
+### OUTPUT GRAPH     
         
-        output$graph <- renderPlot({
+output$graph <- renderPlot({
           
-          tb %>%
-            dplyr::arrange(Type) %>%
-            ggplot(., aes(x = Type, y = Perccomp, group=1)) +
-            geom_polygon(fill="grey", alpha = 0.6)+
-            geom_point(color="black")+
-            coord_curvedpolar()+ 
-            geom_texthline(yintercept = benchdown, label = ifelse(benchdown>1, paste0(benchdown, " times higher"), "Similar"), 
-                           hjust = 0, vjust = -0.2, color = "grey")+
-            geom_texthline(yintercept = benchup, label = paste0(benchup, " times higher"), 
-                           hjust = 0, vjust = -0.2, color = "grey")+
-            #geom_texthline(yintercept = 3, label = "3", 
-            #               hjust = 0, vjust = -0.2, color = "grey") +
-            theme_bw() +
-            #facet_wrap(~ mode)+
-            theme(legend.position = "none",
-                  axis.text.y=element_blank(),
-                  axis.title.y=element_blank(),
-                  axis.title.x=element_blank(),
-                  axis.ticks = element_blank(),
-                  panel.grid  = element_blank(),
-                  plot.background = element_blank(),
-                  panel.grid.major = element_blank(),
-                  panel.grid.minor = element_blank(),
-                  strip.background = element_blank(),
-                  panel.border = element_blank(),
-                  strip.text.x = element_text(size = 16),
-                  #axis.text.x = element_text(colour = mycolors)
-            )+
-            labs(title="Greenspace (compared to Scottish average)")
+  df %>%
+    dplyr::arrange(GStypes) %>%
+    ggplot(., aes(x = GStypes, y = time, group=1)) +
+    # take out size=n if want the original
+    geom_point(aes(size = n), color="black")+
+    geom_polygon(fill="#008000", alpha = 0.6)+
+    coord_curvedpolar()+ 
+    geom_texthline(yintercept = 10, label = "10 minutes", 
+                   hjust = 0, vjust = -0.2, color = "grey")+
+    geom_texthline(yintercept = 20, label = "20 minutes", 
+                   hjust = 0, vjust = -0.2, color = "grey")+
+    geom_texthline(yintercept = 30, label = "30 minutes", 
+                   hjust = 0, vjust = -0.2, color = "grey") +
+    geom_texthline(yintercept = 40, label = "Over 30 minutes", 
+                   hjust = 0, vjust = -0.2, color = "grey") +
+    theme_bw() +
+    theme(legend.position = "none",
+          axis.text.y=element_blank(),
+          axis.title.y=element_blank(),
+          axis.title.x=element_blank(),
+          axis.ticks = element_blank(),
+          panel.grid  = element_blank(),
+          plot.background = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          strip.background = element_blank(),
+          panel.border = element_blank(),
+          strip.text.x = element_text(size = 16))
           
           
         })
         
         
       })
-      
-      
+
       
       # If there is no proper geocode then clear the map 
     }else{
