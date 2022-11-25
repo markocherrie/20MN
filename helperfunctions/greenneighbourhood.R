@@ -21,7 +21,7 @@ set_key(Sys.getenv("HEREAPIKEY"))
 
 Site<-readRDS("data/OSgreenspace/data/Site.rds")
 Accesspoint<-readRDS("data/OSgreenspace/data/AccessPoint.rds")
-ScotlandComp<-read.csv("data/OSgreenspace/ScotlandFreq.csv")
+#ScotlandComp<-read.csv("data/OSgreenspace/ScotlandFreq.csv")
 
 # centre of town
 #55.9533
