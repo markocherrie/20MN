@@ -144,28 +144,50 @@ shinyServer(function(input, output) {
       Siteswithinbuffer2 <- Siteswithinbuffer2[!Siteswithinbuffer2$id.1 %in% unique(Siteswithinbuffer1$id.1),]
       Siteswithinbuffer3 <- Siteswithinbuffer3[!Siteswithinbuffer3$id.1 %in% unique(Siteswithinbuffer2$id.1),]
       
+      
+      
       Siteswithinbuffer1$geometry<-NULL
       Siteswithinbuffer2$geometry<-NULL
       Siteswithinbuffer3$geometry<-NULL
       
+      
+      
+      
+  if(nrow(Siteswithinbuffer1)>0){
       n<-Siteswithinbuffer1 %>%
         count(function.)
       Siteswithinbuffer1<-as.data.frame(unique(Siteswithinbuffer1[,c("function.")]))
       Siteswithinbuffer1$time<-10
       colnames(Siteswithinbuffer1)[1]<-"GStypes"
+      }else{
+        colnames(Siteswithinbuffer1)[8]<-"GStypes"
+         n<- data.frame("function."=character(),
+                       "n"=numeric())
+      }
       
+    if(nrow(Siteswithinbuffer2)>0){
       n2<-Siteswithinbuffer2 %>%
         count(function.)
       Siteswithinbuffer2<-as.data.frame(unique(Siteswithinbuffer2[,c("function.")]))
       Siteswithinbuffer2$time<-20
       colnames(Siteswithinbuffer2)[1]<-"GStypes"
+    }else{
+      colnames(Siteswithinbuffer2)[8]<-"GStypes"
+      n2<- data.frame("function."=character(),
+                     "n"=numeric())
+    }
       
+      if(nrow(Siteswithinbuffer3)>0){
       n3<-Siteswithinbuffer3 %>%
         count(function.)
       Siteswithinbuffer3<-as.data.frame(unique(Siteswithinbuffer3[,c("function.")]))
       Siteswithinbuffer3$time<-30
       colnames(Siteswithinbuffer3)[1]<-"GStypes"
-      
+    }else{
+      colnames(Siteswithinbuffer3)[8]<-"GStypes"
+      n3<- data.frame("function."=character(),
+                     "n"=numeric())
+    }
       
       Siteswithinbuffer2 <- Siteswithinbuffer2[!Siteswithinbuffer2$GStypes %in% unique(Siteswithinbuffer1$GStypes),]
       Siteswithinbuffer3 <- Siteswithinbuffer3[!Siteswithinbuffer3$GStypes %in% unique(Siteswithinbuffer2$GStypes),]
