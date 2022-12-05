@@ -32,7 +32,7 @@ shinyUI(fluidPage(
   
   headerPanel(
     fluidRow(
-      column(11, h1("What's my neighbourhood like?", 
+      column(11, h1("My Neighbourhood", 
                     style = "font-family: 'Roboto Slab', cursive;
      font-weight: bold; font-size: 39px")))
     , windowTitle = "What's my neighbourhood like?"),
@@ -64,11 +64,15 @@ shinyUI(fluidPage(
                        
   )),
   sidebarPanel( 
-    strong("Description"),
-    helpText("Ever wondered what's available close to where you live. This tool helps people living in Scotland
-             to get the most out of their neighbourhood amenities."),
-    selectInput("category", "Category", choices = c("Greenspaces")),
-    div(style="display:inline-block", textInput("str", label =("Enter location"), value = "")),
+    helpText(
+      tags$div(
+        "Ever wondered what's on your doorstep?",
+        tags$br(),
+        "Fill in the features you'd like to see and your address then click enter",
+        tags$br(),
+        "Results will be over here 👉")),
+    selectInput("category", "Feature", choices = c("Greenspaces")),
+    div(style="display:inline-block", textInput("str", label =("Address"), value = "")),
     div(style="display:inline-block",actionButton("goButton", "Enter"))
     # adding the new div tag to the sidebsar            
     ),
@@ -78,9 +82,10 @@ shinyUI(fluidPage(
   tags$br(),
   mainPanel(
     tabsetPanel(type = "tabs",
-                tabPanel("Map", shinycssloaders::withSpinner(leafletOutput("map", height = "100%"))),
-                tabPanel("Stats", htmlOutput("stats")),
-                tabPanel("Graph", plotOutput("graph"))
+                tags$style(type = "text/css", "#map {height: calc(100vh - 80px) !important;}"),
+                tabPanel("Where?", shinycssloaders::withSpinner(leafletOutput("map", height = "100%"))),
+                tabPanel("How many?", htmlOutput("stats")),
+                tabPanel("How far?", plotOutput("graph"))
                 #tabPanel("How to use", includeHTML("howtouse.html")),
                 #tabPanel("Change over time", leafletOutput("change")),
                 #tabPanel("Acknowledgements", includeHTML("acknowledgements.html"))

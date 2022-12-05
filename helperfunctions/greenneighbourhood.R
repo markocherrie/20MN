@@ -169,6 +169,7 @@ df %>%
   theme_bw() +
   theme(legend.position = "none",
         axis.text.y=element_blank(),
+        axis.text.x = element_text(vjust = -1),
         axis.title.y=element_blank(),
         axis.title.x=element_blank(),
         axis.ticks = element_blank(),

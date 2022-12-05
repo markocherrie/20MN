@@ -78,7 +78,6 @@ shinyServer(function(input, output) {
       leaflet() %>%
         addProviderTiles(providers$Stamen.TonerLite)        %>%
         addScaleBar(position = c("bottomleft"))         %>%
-        addFullscreenControl()                          %>%
         setView(lng =-4.2026, lat = 56.4907, zoom = 7) 
       
     })
@@ -250,7 +249,8 @@ observe({
             addMarkers(lng=as.numeric(coords$long), lat=as.numeric(coords$lat)) %>% 
             addPolylines(data = isolines_line[2,],
                          color = "#100c08",
-                         weight=4,
+                         opacity=0.5,
+                         weight=2,
                          popup = isolines$range, 
                          group="20 minute walking distance") %>%
             addPolygons(data=Siteswithinbufferandaccesspoints_20,
@@ -295,7 +295,6 @@ observe({
 output$stats <- renderUI({ 
           
   if(nrow(Siteswithinbufferandaccesspoints_20)>0){
-          title<-"<h4>Greenspace</h4>"
           str1<-paste0(tb$Freq.x[1]," ", tb$Type[1])
           str2<-paste0(tb$Freq.x[2]," ", tb$Type[2])
           str3<-paste0(tb$Freq.x[3]," ", tb$Type[3])
@@ -307,7 +306,7 @@ output$stats <- renderUI({
           str9<-paste0(tb$Freq.x[9]," ", tb$Type[9])
           str10<-paste0(tb$Freq.x[10]," ", tb$Type[10])
           
-          HTML(paste(title, str1, str2, str3,str4, str5, str6,str7, str8, str9, str10, sep = '<br/>'))
+          HTML(paste('<br/>',str1, str2, str3,str4, str5, str6,str7, str8, str9, str10, sep = '<br/>'))
   } else{
     HTML(paste("No features within 20 minutes"))
     }
@@ -338,6 +337,7 @@ output$graph <- renderPlot({
     theme_bw() +
     theme(legend.position = "none",
           axis.text.y=element_blank(),
+          axis.text.x = element_text(vjust = -1),
           axis.title.y=element_blank(),
           axis.title.x=element_blank(),
           axis.ticks = element_blank(),
