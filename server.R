@@ -350,7 +350,7 @@ output$graph <- renderPlot({
           strip.text.x = element_text(size = 16))
           
           
-        })
+        }, res=85)
         
         
       })
