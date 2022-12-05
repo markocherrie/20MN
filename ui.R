@@ -67,6 +67,7 @@ shinyUI(fluidPage(
     strong("Description"),
     helpText("Ever wondered what's available close to where you live. This tool helps people living in Scotland
              to get the most out of their neighbourhood amenities."),
+    selectInput("category", "Category", choices = c("Greenspaces")),
     div(style="display:inline-block", textInput("str", label =("Enter location"), value = "")),
     div(style="display:inline-block",actionButton("goButton", "Enter"))
     # adding the new div tag to the sidebsar            

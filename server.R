@@ -17,7 +17,10 @@ library(sf)
 # install.packages("hereR")
 library(hereR)
 library(geomtextpath)
+library(Cairo)
 #readRenviron("~/.Renviron")
+
+options(shiny.usecairo=T)
 set_key(Sys.getenv("HEREAPIKEY"))
 Sys.getenv("R_TEST")
 
@@ -60,6 +63,7 @@ sp.na.omit <- function(x, margin=2) {
 # server file
 shinyServer(function(input, output) {
   
+
   # data --- change this to local authority and nearby ones
   Accesspoint<-readRDS("data/OSgreenspace/data/AccessPoint.rds")
   Site<-readRDS("data/OSgreenspace/data/Site.rds")
@@ -149,8 +153,6 @@ shinyServer(function(input, output) {
       Siteswithinbuffer1$geometry<-NULL
       Siteswithinbuffer2$geometry<-NULL
       Siteswithinbuffer3$geometry<-NULL
-      
-      
       
       
   if(nrow(Siteswithinbuffer1)>0){
@@ -247,7 +249,7 @@ observe({
           mapit  %>%
             addMarkers(lng=as.numeric(coords$long), lat=as.numeric(coords$lat)) %>% 
             addPolylines(data = isolines_line[2,],
-                         color = "red",
+                         color = "#100c08",
                          weight=4,
                          popup = isolines$range, 
                          group="20 minute walking distance") %>%
@@ -269,6 +271,8 @@ observe({
         
         
 # For the STATS
+  
+  if(nrow(Siteswithinbufferandaccesspoints_20)>0){
         tb<-as.data.frame(table(Siteswithinbufferandaccesspoints_20$function.))
         if(nrow(tb)==0){
           tb<-data.frame (Type  = c(""),
@@ -284,9 +288,13 @@ observe({
         tb$Perccomp<-tb$Perc.y/tb$Perc
         benchdown<-floor(max(tb$Perccomp)*0.75)
         benchup<-ceiling(max(tb$Perccomp)*1.25)
+  } else{
+    return(Siteswithinbufferandaccesspoints_20)
+      }
         
 output$stats <- renderUI({ 
           
+  if(nrow(Siteswithinbufferandaccesspoints_20)>0){
           title<-"<h4>Greenspace</h4>"
           str1<-paste0(tb$Freq.x[1]," ", tb$Type[1])
           str2<-paste0(tb$Freq.x[2]," ", tb$Type[2])
@@ -300,7 +308,13 @@ output$stats <- renderUI({
           str10<-paste0(tb$Freq.x[10]," ", tb$Type[10])
           
           HTML(paste(title, str1, str2, str3,str4, str5, str6,str7, str8, str9, str10, sep = '<br/>'))
+  } else{
+    HTML(paste("No features within 20 minutes"))
+    }
         })
+
+  
+
 
 ### OUTPUT GRAPH     
         
@@ -351,6 +365,7 @@ output$graph <- renderPlot({
   })  
   
   ###################################################################################################################    
-  
+
+
   # this ones for the Shinyserver  
 })
