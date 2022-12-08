@@ -6,6 +6,7 @@ library(rgdal)
 library(shinyBS)
 library(gtools)
 library(ggplot2)
+library(shinyWidgets)
 ###updates--- to get datazones that have been clicked
 ### http://stackoverflow.com/questions/28938642/marker-mouse-click-event-in-r-leaflet-for-shiny
 
@@ -39,6 +40,22 @@ shinyUI(fluidPage(
   
   
   ### CRESH favicon
+  tags$head(tags$style(
+    HTML('
+        #sidebar {
+            background-color: #dec4de;
+        }
+
+        body, label, input, button, select { 
+          font-family: "Arial";
+        }')
+  )),
+  tags$head(
+    tags$style(HTML("
+      .leaflet-left .leaflet-control{
+        visibility: hidden;
+      }
+    "))),
   tags$head(tags$link(rel = "shortcut icon", href="http://www.iconj.com/ico/g/g/ggtzbwew2b.ico", type="image/x-icon")),
   tags$head(tags$style("#summary{
                       position: relative;
@@ -60,32 +77,40 @@ shinyUI(fluidPage(
                        font-family: Helvetica, Arial Black, sans;
                        font-size: 24px;
                        text-align: center;
-                       }"
+                       }",
+              
                        
   )),
-  sidebarPanel( 
-    helpText(
-      tags$div(
-        "Ever wondered what's on your doorstep?",
-        tags$br(),
-        "Fill in the features you'd like to see and your address then click enter",
-        tags$br(),
-        "Results will be over here 👉")),
+  column(1,
+    #helpText(
+    #  tags$div(
+    #    "Ever wondered what's on your doorstep?",
+    #    tags$br(),
+    #    "Fill in the features you'd like to see and your address then click enter",
+    #    tags$br(),
+    #    "Results will be over here 👉")),
+    dropdownButton(
     selectInput("category", "Feature", choices = c("Greenspaces")),
     div(style="display:inline-block", textInput("str", label =("Address"), value = "")),
-    div(style="display:inline-block",actionButton("goButton", "Enter"))
+    div(style="display:inline-block",actionButton("goButton", "Enter 👉")),
+    circle = TRUE,
+    status = "danger", 
+    icon = icon("gear"), width = "320px"
+    #tooltip = tooltipOptions(title = "Click to see inputs !")
+    
+    )
     # adding the new div tag to the sidebsar            
     ),
     #div(style="display:inline-block", textInput("str", label =("Enter an Area of Interest"), value = "")),
     #bsTooltip("str", "Tip: Type in an address, postcode or point of interest and click Enter. The location will be shown as a blue marker with data for the surrounding area local area presented on the map.", "top"
     #),
   tags$br(),
-  mainPanel(
-    tabsetPanel(type = "tabs",
-                tags$style(type = "text/css", "#map {height: calc(100vh - 80px) !important;}"),
+  column(11,
+    tabsetPanel(type = "tabs",                
                 tabPanel("Where?", shinycssloaders::withSpinner(leafletOutput("map", height = "100%"))),
                 tabPanel("How many?", htmlOutput("stats")),
-                tabPanel("How far?", plotOutput("graph"))
+                #tabPanel("How far?", plotOutput("graph"), width= "100%"),
+                tabPanel("How far?", imageOutput("Plot",height = "100%", width = "100%"))
                 #tabPanel("How to use", includeHTML("howtouse.html")),
                 #tabPanel("Change over time", leafletOutput("change")),
                 #tabPanel("Acknowledgements", includeHTML("acknowledgements.html"))

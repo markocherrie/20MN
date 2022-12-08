@@ -187,7 +187,7 @@ df %>%
 ggsave(paste0("output/greenspacenearme",lat, long, ".png"))
 }
 
-greennearme(55.893863, -3.316051)
+greennearme(55.6531, -3.1936)
 greennearme(55.935408, -3.226440)
 
 

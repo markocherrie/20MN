@@ -18,6 +18,8 @@ library(sf)
 library(hereR)
 library(geomtextpath)
 library(Cairo)
+library(htmlwidgets)
+
 #readRenviron("~/.Renviron")
 
 options(shiny.usecairo=T)
@@ -78,7 +80,13 @@ shinyServer(function(input, output) {
       leaflet() %>%
         addProviderTiles(providers$Stamen.TonerLite)        %>%
         addScaleBar(position = c("bottomleft"))         %>%
-        setView(lng =-4.2026, lat = 56.4907, zoom = 7) 
+        setView(lng =-4.2026, lat = 56.4907, zoom = 7) %>%
+        onRender(
+          "function(el, x) {
+          L.control.zoom({
+            position:'topright'
+          }).addTo(this);
+        }")
       
     })
     
@@ -317,9 +325,9 @@ output$stats <- renderUI({
 
 ### OUTPUT GRAPH     
         
-output$graph <- renderPlot({
+output$Plot <- renderImage({
           
-  df %>%
+Plot <- df %>%
     dplyr::arrange(GStypes) %>%
     ggplot(., aes(x = GStypes, y = time, group=1)) +
     # take out size=n if want the original
@@ -334,10 +342,11 @@ output$graph <- renderPlot({
                    hjust = 0, vjust = -0.2, color = "grey") +
     geom_texthline(yintercept = 40, label = "Over 30 minutes", 
                    hjust = 0, vjust = -0.2, color = "grey") +
+    labs(title=" ") +
     theme_bw() +
     theme(legend.position = "none",
           axis.text.y=element_blank(),
-          axis.text.x = element_text(vjust = -1),
+          axis.text.x = element_text(vjust = -0.5, size =10, face ="bold"),
           axis.title.y=element_blank(),
           axis.title.x=element_blank(),
           axis.ticks = element_blank(),
@@ -347,13 +356,31 @@ output$graph <- renderPlot({
           panel.grid.minor = element_blank(),
           strip.background = element_blank(),
           panel.border = element_blank(),
-          strip.text.x = element_text(size = 16))
-          
-          
-        }, res=85)
-        
-        
-      })
+          #strip.text.x = element_text(size = 16),
+          plot.title = element_text(size=18))
+      
+outfile <- tempfile(fileext = '.png')
+
+# Generate the PNG
+png(outfile, 
+    width = 360*10, 
+    height = 360*10,
+    res = 72*10)
+print(Plot)
+dev.off()
+
+# Return a list containing the filename
+list(src = outfile,
+     contentType = 'image/png',
+     width = 550,
+     height = 550,
+     alt = "This is alternate text")
+}, deleteFile = TRUE)
+
+        })
+
+      
+
 
       
       # If there is no proper geocode then clear the map 
