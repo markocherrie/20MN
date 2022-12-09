@@ -20,7 +20,9 @@ textInputRow<-function (inputId, label, value = "")
 }
 
 ####### Shiny fluid page set sup
-shinyUI(fluidPage(
+shinyUI(fixedPage(
+
+fixedRow(
   useShinyjs(),  # Include shinyjs
   
   # Set the fonts and css for map window
@@ -31,25 +33,7 @@ shinyUI(fluidPage(
                   "))
   ),
   
-  headerPanel(
-    fluidRow(
-      column(11, h1("My Neighbourhood", 
-                    style = "font-family: 'Roboto Slab', cursive;
-     font-weight: bold; font-size: 39px")))
-    , windowTitle = "What's my neighbourhood like?"),
   
-  
-  ### CRESH favicon
-  tags$head(tags$style(
-    HTML('
-        #sidebar {
-            background-color: #dec4de;
-        }
-
-        body, label, input, button, select { 
-          font-family: "Arial";
-        }')
-  )),
   tags$head(
     tags$style(HTML("
       .leaflet-left .leaflet-control{
@@ -81,40 +65,70 @@ shinyUI(fluidPage(
               
                        
   )),
-  column(1,
-    #helpText(
-    #  tags$div(
-    #    "Ever wondered what's on your doorstep?",
-    #    tags$br(),
-    #    "Fill in the features you'd like to see and your address then click enter",
-    #    tags$br(),
-    #    "Results will be over here 👉")),
-    dropdownButton(
-    selectInput("category", "Feature", choices = c("Greenspaces")),
-    div(style="display:inline-block", textInput("str", label =("Address"), value = "")),
-    div(style="display:inline-block",actionButton("goButton", "Enter 👉")),
-    circle = TRUE,
-    status = "danger", 
-    icon = icon("gear"), width = "320px"
-    #tooltip = tooltipOptions(title = "Click to see inputs !")
+  # geolocation, use this???
+  tags$script('
+  $(document).ready(function () {
+    navigator.geolocation.getCurrentPosition(onSuccess, onError);
+
+    function onError (err) {
+    Shiny.onInputChange("geolocation", false);
+    }
     
-    )
-    # adding the new div tag to the sidebsar            
-    ),
+   function onSuccess (position) {
+      setTimeout(function () {
+          var coords = position.coords;
+          console.log(coords.latitude + ", " + coords.longitude);
+          Shiny.onInputChange("geolocation", true);
+          Shiny.onInputChange("lat", coords.latitude);
+          Shiny.onInputChange("long", coords.longitude);
+      }, 1100)
+  }
+  });
+'),
     #div(style="display:inline-block", textInput("str", label =("Enter an Area of Interest"), value = "")),
     #bsTooltip("str", "Tip: Type in an address, postcode or point of interest and click Enter. The location will be shown as a blue marker with data for the surrounding area local area presented on the map.", "top"
     #),
-  tags$br(),
-  column(11,
-    tabsetPanel(type = "tabs",                
+  
+              column(11,
+                     tabsetPanel(type="pills", 
                 tabPanel("Where?", shinycssloaders::withSpinner(leafletOutput("map", height = "100%"))),
                 tabPanel("How many?", htmlOutput("stats")),
-                #tabPanel("How far?", plotOutput("graph"), width= "100%"),
                 tabPanel("How far?", imageOutput("Plot",height = "100%", width = "100%"))
+                #tabPanel("How far?", plotOutput("graph"), width= "100%"),
+                
                 #tabPanel("How to use", includeHTML("howtouse.html")),
                 #tabPanel("Change over time", leafletOutput("change")),
                 #tabPanel("Acknowledgements", includeHTML("acknowledgements.html"))
-    ))
+    ))),
+fixedRow(
+  column(1, style = "
+                position: absolute;
+                bottom: 15px;
+                left:5px;", offset = 10,
+         #helpText(
+         #  tags$div(
+         #    "Ever wondered what's on your doorstep?",
+         #    tags$br(),
+         #    "Fill in the features you'd like to see and your address then click enter",
+         #    tags$br(),
+         #    "Results will be over here 👉")),
+         dropdownButton(
+           selectInput("category", "Feature", choices = c("Greenspaces")),
+           div(style="display:inline-block", textInput("str", label =("Address"), value = "")),
+           div(style="display:inline-block",actionButton("goButton", "Enter")),
+           #circle = TRUE,
+           status = "danger", 
+           right=T,
+           size="lg",
+           margin=,
+           up=T,
+           icon = icon("gear"), 
+           width = "320px"
+           #tooltip = tooltipOptions(title = "Click to see inputs !")
+         ))
+         
+         # adding the new div tag to the sidebsar            
+  ),
 ))
 
 
