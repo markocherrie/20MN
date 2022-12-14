@@ -24,7 +24,6 @@ library(htmlwidgets)
 
 options(shiny.usecairo=T)
 set_key(Sys.getenv("HEREAPIKEY"))
-Sys.getenv("R_TEST")
 
 
 shinyServer(function(input, output) {
@@ -39,12 +38,10 @@ shinyServer(function(input, output) {
   
 observe({
     
-  if(is.null(input$lat)){
+  #  just wait for the app to catch up
+  if(!is.null(input$lat)){
     
-      print("wait")
-      
-} else{
-  
+  # now get the input
     lat<-input$lat
     long<-input$long
     
@@ -52,6 +49,11 @@ observe({
     coords_wgs <- st_as_sf(coords, coords = c("long", "lat"),
                            crs = 4326, dim = "XY")
     coords_BNG <- st_transform(coords_wgs, 27700)
+    
+    # cut site to size
+    BNGbuffer<-st_buffer(coords_BNG, 10000)
+    Site<-Site[BNGbuffer,]
+    
     #coords_BNG_2km <- st_buffer(coords_BNG, 2000)
     
     isolines <- isoline(
@@ -297,6 +299,6 @@ observe({
            height = 550,
            alt = "This is alternate text")
     }, deleteFile = TRUE)
-    }
+  } 
   }) # observe
 }) # shinyserver
