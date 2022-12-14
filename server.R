@@ -32,17 +32,19 @@ shinyServer(function(input, output) {
   # data --- change this to local authority and nearby ones
   Accesspoint<-readRDS("data/OSgreenspace/data/AccessPoint.rds")
   Site<-readRDS("data/OSgreenspace/data/Site.rds")
+  Site <- sf::st_transform(Site, 27700)
   ScotlandComp<-read.csv("data/OSgreenspace/ScotlandFreq.csv")
-  Trees<-readRDS("data/EdinburghCouncil/Trees/trees.rds")
+  #Trees<-readRDS("data/EdinburghCouncil/Trees/trees.rds")
   
   
-  observe({
+observe({
     
   if(is.null(input$lat)){
     
       print("wait")
       
-    } else{
+} else{
+  
     lat<-input$lat
     long<-input$long
     
