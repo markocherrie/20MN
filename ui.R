@@ -7,6 +7,8 @@ library(gtools)
 library(ggplot2)
 library(shinyWidgets)
 library(shinycssloaders)
+library(shinyMobile)
+
 
 shinyUI(f7Page(
   # header font
