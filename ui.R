@@ -9,6 +9,12 @@ library(shinyWidgets)
 library(shinycssloaders)
 library(shinyMobile)
 
+# this isn't working - it's so the person can click enter rarther than
+# having to click on the go button
+jscode <- '$(document).keyup(function(e) {
+    if (e.key == "Enter") {
+    $("#goButton").click();
+}});'
 
 shinyUI(f7Page(
   # header font
@@ -19,6 +25,20 @@ shinyUI(f7Page(
                   @import url('//fonts.googleapis.com/css?family=Roboto+Slab');
                   "))
   ),
+  tags$style(type="text/css", ".item-input {width:400px;
+                                background-color: none;}"),
+  tags$style(type="text/css", ".button {
+  border: none;
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  width:60px;
+  height:30px;}"),
+  tags$style(type="text/css", ".panel-content{
+  padding-left: 15px;
+  padding-right: 15px;}"),
   # geolocation
   # get geolocation from user #
   tags$script('
@@ -67,11 +87,12 @@ shinyUI(f7Page(
         f7Card(
           title=
               tagList(
-                f7Text(
-                inputId = "str",
-                label = "",
-                value = "",
-                placeholder = "Your Address here"),
+                tagAppendAttributes(
+                  f7Text(
+                    inputId = "str",
+                    label = "",
+                    value = "",
+                    placeholder = "Your Address here"), `data-proxy-click` = "goButton"),
                 f7Button(inputId="goButton",color = "blue", label = "Go", size="small"
                #f7Picker(
               #   inputId = "mypicker",

@@ -25,37 +25,35 @@ library(htmlwidgets)
 options(shiny.usecairo=T)
 set_key(Sys.getenv("HEREAPIKEY"))
 
+# data --- change this to local authority and nearby ones
+Accesspoint<-readRDS("data/OSgreenspace/data/AccessPoint.rds")
+Site<-readRDS("data/OSgreenspace/data/Site.rds")
+Site <- sf::st_transform(Site, 27700)
+ScotlandComp<-read.csv("data/OSgreenspace/ScotlandFreq.csv")
+#Trees<-readRDS("data/EdinburghCouncil/Trees/trees.rds")
+BING <- function(str){
+  u <- URLencode(paste0("http://dev.virtualearth.net/REST/v1/Locations?q=", str, "&maxResults=1&key=",Sys.getenv(c("BINGKEY"))))
+  d <- getURL(u)
+  j <- RJSONIO::fromJSON(d,simplify = FALSE) 
+  if (j$resourceSets[[1]]$estimatedTotal > 0) {
+    lat <- j$resourceSets[[1]]$resources[[1]]$point$coordinates[[1]]
+    lng <- j$resourceSets[[1]]$resources[[1]]$point$coordinates[[2]]
+  }
+  else {    
+    lat <- lng <- NA
+  }
+  data<-c(lat,lng)
+  data[3]<-"BING"
+  return(data)
+}  
+
+
 
 shinyServer(function(input, output) {
 
-  # data --- change this to local authority and nearby ones
-  Accesspoint<-readRDS("data/OSgreenspace/data/AccessPoint.rds")
-  Site<-readRDS("data/OSgreenspace/data/Site.rds")
-  Site <- sf::st_transform(Site, 27700)
-  ScotlandComp<-read.csv("data/OSgreenspace/ScotlandFreq.csv")
-  #Trees<-readRDS("data/EdinburghCouncil/Trees/trees.rds")
-  BING <- function(str){
-    u <- URLencode(paste0("http://dev.virtualearth.net/REST/v1/Locations?q=", str, "&maxResults=1&key=",Sys.getenv(c("BINGKEY"))))
-    d <- getURL(u)
-    j <- RJSONIO::fromJSON(d,simplify = FALSE) 
-    if (j$resourceSets[[1]]$estimatedTotal > 0) {
-      lat <- j$resourceSets[[1]]$resources[[1]]$point$coordinates[[1]]
-      lng <- j$resourceSets[[1]]$resources[[1]]$point$coordinates[[2]]
-    }
-    else {    
-      lat <- lng <- NA
-    }
-    data<-c(lat,lng)
-    data[3]<-"BING"
-    return(data)
-  }  
-  
-
-  
-  
+ 
 observeEvent(input$goButton,{
-  #  just wait for the app to catch up
-  # geocode the person's string
+
     str   <- as.character(paste0(input$str, ", Scotland"))
     map   <- BING(str)
     
