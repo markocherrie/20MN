@@ -34,16 +34,33 @@ shinyServer(function(input, output) {
   Site <- sf::st_transform(Site, 27700)
   ScotlandComp<-read.csv("data/OSgreenspace/ScotlandFreq.csv")
   #Trees<-readRDS("data/EdinburghCouncil/Trees/trees.rds")
+  BING <- function(str){
+    u <- URLencode(paste0("http://dev.virtualearth.net/REST/v1/Locations?q=", str, "&maxResults=1&key=",Sys.getenv(c("BINGKEY"))))
+    d <- getURL(u)
+    j <- RJSONIO::fromJSON(d,simplify = FALSE) 
+    if (j$resourceSets[[1]]$estimatedTotal > 0) {
+      lat <- j$resourceSets[[1]]$resources[[1]]$point$coordinates[[1]]
+      lng <- j$resourceSets[[1]]$resources[[1]]$point$coordinates[[2]]
+    }
+    else {    
+      lat <- lng <- NA
+    }
+    data<-c(lat,lng)
+    data[3]<-"BING"
+    return(data)
+  }  
+  
+
   
   
-observe({
-    
+observeEvent(input$goButton,{
   #  just wait for the app to catch up
-  if(!is.null(input$lat)){
+  # geocode the person's string
+    str   <- as.character(paste0(input$str, ", Scotland"))
+    map   <- BING(str)
     
-  # now get the input
-    lat<-input$lat
-    long<-input$long
+    lat<-map[1]
+    long<-map[2]
     
     coords<-data.frame(lat,long)
     coords_wgs <- st_as_sf(coords, coords = c("long", "lat"),
@@ -202,7 +219,7 @@ observe({
       leaflet() %>%
         addProviderTiles(providers$Stamen.TonerLite)        %>%
         addScaleBar(position = c("bottomleft"))         %>%
-        setView(lng =  long, lat = lat, zoom = 15) %>% 
+        setView(lng =  long, lat = lat, zoom = 14) %>% 
         addMarkers(lng=as.numeric(coords$long), lat=as.numeric(coords$lat)) %>% 
         addPolylines(data = isolines_line[2,],
                      color = "#100c08",
@@ -299,6 +316,5 @@ observe({
            height = 550,
            alt = "This is alternate text")
     }, deleteFile = TRUE)
-  } 
   }) # observe
 }) # shinyserver

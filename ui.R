@@ -19,32 +19,33 @@ shinyUI(f7Page(
                   @import url('//fonts.googleapis.com/css?family=Roboto+Slab');
                   "))
   ),
-
   # geolocation
+  # get geolocation from user #
   tags$script('
-              $(document).ready(function () {
-              navigator.geolocation.getCurrentPosition(onSuccess, onError);
-              
-              function onError (err) {
-              Shiny.onInputChange("geolocation", false);
-              }
-              
-              function onSuccess (position) {
-              setTimeout(function () {
-              var coords = position.coords;
-              console.log(coords.latitude + ", " + coords.longitude);
-              Shiny.onInputChange("geolocation", true);
-              Shiny.onInputChange("lat", coords.latitude);
-              Shiny.onInputChange("long", coords.longitude);
-              }, 1100)
-              }
-              });
-              '),
+  $(document).ready(function () {
+    navigator.geolocation.getCurrentPosition(onSuccess, onError);
+
+    function onError (err) {
+    Shiny.onInputChange("geolocation", false);
+    }
+    
+   function onSuccess (position) {
+      setTimeout(function () {
+          var coords = position.coords;
+          console.log(coords.latitude + ", " + coords.longitude);
+          Shiny.onInputChange("geolocation", true);
+          Shiny.onInputChange("lat", coords.latitude);
+          Shiny.onInputChange("long", coords.longitude);
+      }, 1100)
+  }
+  });
+            '),
   title = "My Neighbourhood",
   f7TabLayout(
     panels = tagList(
       f7Panel(title = "About", side = "right", theme = "dark", 
-              "", 
+              "I made this so that people can find out more about the neighbourhood where
+              they live. ", 
               effect = "reveal")
     ),
     navbar = f7Navbar(
@@ -56,23 +57,30 @@ shinyUI(f7Page(
     ),
     f7Tabs(
       animated = TRUE,
-      #swipeable = TRUE,
       f7Tab(
         tabName = "Tab1",
-       # f7Picker(
-      #    inputId = "mypicker",
-      #    placeholder = "",
-      #    label = "",
-      #    choices = c('Greenspaces', 'Trees', 'Wild swimming')
-      #  ),
         icon = f7Icon("map"),
         active = FALSE,
         f7Shadow(
           intensity = 10,
           hover = TRUE,
-          f7Card(
-            title = "Where are they?",
-            withSpinner(leafletOutput("map"))
+        f7Card(
+          title=
+              tagList(
+                f7Text(
+                inputId = "str",
+                label = "",
+                value = "",
+                placeholder = "Your Address here"),
+                f7Button(inputId="goButton",color = "blue", label = "Go", size="small"
+               #f7Picker(
+              #   inputId = "mypicker",
+              #   placeholder = "",
+              #   label = "",
+              #   choices = c('Greenspaces', 'Trees', 'Bluespaces')
+          #     )
+          )),
+            leafletOutput("map")
           )
         )
       ),
