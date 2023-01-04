@@ -27,8 +27,9 @@ set_key(Sys.getenv("HEREAPIKEY"))
 
 # data --- change this to local authority and nearby ones
 Accesspoint<-readRDS("data/OSgreenspace/data/AccessPoint.rds")
+# possibl
 Site<-readRDS("data/OSgreenspace/data/Site.rds")
-Site <- sf::st_transform(Site, 27700)
+#Site <- sf::st_transform(Site, 27700)
 ScotlandComp<-read.csv("data/OSgreenspace/ScotlandFreq.csv")
 #Trees<-readRDS("data/EdinburghCouncil/Trees/trees.rds")
 BING <- function(str){
@@ -51,10 +52,9 @@ BING <- function(str){
 
 shinyServer(function(input, output) {
 
- 
 observeEvent(input$goButton,{
 
-    str   <- as.character(paste0(input$str, ", Scotland"))
+    str   <- as.character(paste0(input$str, ", UK"))
     map   <- BING(str)
     
     lat<-map[1]
@@ -95,12 +95,15 @@ observeEvent(input$goButton,{
     
     #### for the graph
     df<-data.frame(GStypes=unique(Site$function.))
-    Siteswithinbuffer1<-st_intersection(isolines_BNG[1,], Site)
-    Siteswithinbuffer2<-st_intersection(isolines_BNG[2,], Site)
-    Siteswithinbuffer3<-st_intersection(isolines_BNG[3,], Site)
-    Siteswithinbuffer2 <- Siteswithinbuffer2[!Siteswithinbuffer2$id.1 %in% unique(Siteswithinbuffer1$id.1),]
-    Siteswithinbuffer3 <- Siteswithinbuffer3[!Siteswithinbuffer3$id.1 %in% unique(Siteswithinbuffer2$id.1),]
-
+    Siteswithinbuffer1<-Site[(unlist(st_intersects(isolines_BNG[1,], Site))),]
+    Siteswithinbuffer1$name<-"0 to 10 mins"
+    Siteswithinbuffer2<-Site[(unlist(st_intersects(isolines_BNG[2,], Site))),]
+    Siteswithinbuffer2$name<-"0 to 20 mins"
+    Siteswithinbuffer3<-Site[(unlist(st_intersects(isolines_BNG[3,], Site))),]
+    Siteswithinbuffer3$name<-"0 to 30 mins"
+    Siteswithinbuffer2 <- Siteswithinbuffer2[!Siteswithinbuffer2$id %in% unique(Siteswithinbuffer1$id),]
+    Siteswithinbuffer3 <- Siteswithinbuffer3[!Siteswithinbuffer3$id %in% unique(Siteswithinbuffer2$id),]
+    
     Siteswithinbuffer1$geometry<-NULL
     Siteswithinbuffer2$geometry<-NULL
     Siteswithinbuffer3$geometry<-NULL
@@ -149,7 +152,6 @@ observeEvent(input$goButton,{
     Siteswithinbuffer1<-merge(Siteswithinbuffer1, n, by.x="GStypes", by.y="function.", all.x=T)
     Siteswithinbuffer2<-merge(Siteswithinbuffer2, n2, by.x="GStypes", by.y="function.", all.x=T)
     Siteswithinbuffer3<-merge(Siteswithinbuffer3, n3, by.x="GStypes", by.y="function.", all.x=T)
-    
     
     dfadd<-rbind(Siteswithinbuffer1, Siteswithinbuffer2, Siteswithinbuffer3)
     df<-merge(df, dfadd, by="GStypes", all.x=T)

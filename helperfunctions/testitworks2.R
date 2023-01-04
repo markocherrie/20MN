@@ -51,12 +51,14 @@ isolines_BNG <- st_transform(isolines, 27700)
 
 
 df<-data.frame(GStypes=unique(Site$function.))
-
-Siteswithinbuffer1<-st_intersection(isolines_BNG[1,], Site)
-Siteswithinbuffer2<-st_intersection(isolines_BNG[2,], Site)
-Siteswithinbuffer3<-st_intersection(isolines_BNG[3,], Site)
-Siteswithinbuffer2 <- Siteswithinbuffer2[!Siteswithinbuffer2$id.1 %in% unique(Siteswithinbuffer1$id.1),]
-Siteswithinbuffer3 <- Siteswithinbuffer3[!Siteswithinbuffer3$id.1 %in% unique(Siteswithinbuffer2$id.1),]
+Siteswithinbuffer1<-Site[(unlist(st_intersects(isolines_BNG[1,], Site))),]
+Siteswithinbuffer1$name<-"0 to 10 mins"
+Siteswithinbuffer2<-Site[(unlist(st_intersects(isolines_BNG[2,], Site))),]
+Siteswithinbuffer2$name<-"0 to 20 mins"
+Siteswithinbuffer3<-Site[(unlist(st_intersects(isolines_BNG[3,], Site))),]
+Siteswithinbuffer3$name<-"0 to 30 mins"
+Siteswithinbuffer2 <- Siteswithinbuffer2[!Siteswithinbuffer2$id %in% unique(Siteswithinbuffer1$id),]
+Siteswithinbuffer3 <- Siteswithinbuffer3[!Siteswithinbuffer3$id %in% unique(Siteswithinbuffer2$id),]
 
 Siteswithinbuffer1$geometry<-NULL
 Siteswithinbuffer2$geometry<-NULL
