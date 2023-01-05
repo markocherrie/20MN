@@ -108,7 +108,7 @@ observeEvent(input$goButton,{
     Siteswithinbuffer2$geometry<-NULL
     Siteswithinbuffer3$geometry<-NULL
     
-    
+    # making sure that we don't have empty dataframe
     if(nrow(Siteswithinbuffer1)>0){
       n<-Siteswithinbuffer1 %>%
         count(function.)
