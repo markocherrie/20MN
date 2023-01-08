@@ -114,7 +114,7 @@ shinyUI(f7Page(
           hover = TRUE,
           f7Card(
             title = "How many are there?",
-            htmlOutput("stats")
+            plotOutput("stats")
           )
         )
       ),

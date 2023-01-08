@@ -20,6 +20,8 @@ library(geomtextpath)
 library(Cairo)
 library(htmlwidgets)
 
+library(ggpubr)
+
 #readRenviron("~/.Renviron")
 
 options(shiny.usecairo=T)
@@ -29,7 +31,8 @@ set_key(Sys.getenv("HEREAPIKEY"))
 Accesspoint<-readRDS("data/OSgreenspace/data/AccessPoint.rds")
 # possibl
 Site<-readRDS("data/OSgreenspace/data/Site.rds")
-#Site <- sf::st_transform(Site, 27700)
+Site <- sf::st_transform(Site, 27700)
+# pre-converteed Site but it's not working so keeping this in for now
 ScotlandComp<-read.csv("data/OSgreenspace/ScotlandFreq.csv")
 #Trees<-readRDS("data/EdinburghCouncil/Trees/trees.rds")
 BING <- function(str){
@@ -91,7 +94,7 @@ observeEvent(input$goButton,{
     isolines_20<-isolines[2,]
     isolines_20_BNG <- st_transform(isolines_20, 27700)
     isolines_BNG <- st_transform(isolines, 27700)
-    
+    isolines_BNG
     
     #### for the graph
     df<-data.frame(GStypes=unique(Site$function.))
@@ -243,23 +246,93 @@ observeEvent(input$goButton,{
     })    
     
     
-    output$stats <- renderUI({ 
+    output$stats <- renderPlot({ 
       
       if(nrow(Siteswithinbufferandaccesspoints_20)>0){
-        str1<-paste0(tb$Freq.x[1]," ", tb$Type[1])
-        str2<-paste0(tb$Freq.x[2]," ", tb$Type[2])
-        str3<-paste0(tb$Freq.x[3]," ", tb$Type[3])
-        str4<-paste0(tb$Freq.x[4]," ", tb$Type[4])
-        str5<-paste0(tb$Freq.x[5]," ", tb$Type[5])
-        str6<-paste0(tb$Freq.x[6]," ", tb$Type[6])
-        str7<-paste0(tb$Freq.x[7]," ", tb$Type[7])
-        str8<-paste0(tb$Freq.x[8]," ", tb$Type[8])
-        str9<-paste0(tb$Freq.x[9]," ", tb$Type[9])
-        str10<-paste0(tb$Freq.x[10]," ", tb$Type[10])
         
-        HTML(paste('<br/>',str1, str2, str3,str4, str5, str6,str7, str8, str9, str10, sep = '<br/>'))
+        # create base
+        base<-ggplot(tb, aes(x = Type))+
+          coord_flip()+ theme_bw() + theme(panel.border = element_blank(), 
+                                           panel.grid.major = element_blank(),
+                                           panel.grid.minor = element_blank()
+          )+
+          xlab("")+
+          theme(plot.margin = unit(c(0.85,0.5,0.3,0),"cm"))
+        
+        p2 <- ggplot(tb, aes(x = Type, y = Freq.x))+
+          geom_col(aes(fill = Type))+ coord_flip()+ylim(0,20)+
+          #scale_fill_manual(breaks = c("MANAGERS, DIRECTORS AND SENIOR OFFICIALS",
+           #                            "PROFESSIONAL OCCUPATIONS",
+          #                             "ASSOCIATE PROFESSIONAL AND TECHNICAL OCCUPATIONS",
+           #                            "ADMINISTRATIVE AND SECRETARIAL OCCUPATIONS",
+            #                           "SKILLED TRADES OCCUPATIONS",
+             #                          "CARING, LEISURE AND OTHER SERVICE OCCUPATIONS",
+              #                         "SALES AND CUSTOMER SERVICE OCCUPATIONS",
+               #                        "PROCESS, PLANT AND MACHINE OPERATIVES",
+                #                       "ELEMENTARY OCCUPATIONS"), 
+                 #           values=c("#88CCEE", "#CC6677", "#DDCC77", "#117733", 
+                  #                   "#332288", "#AA4499", "#44AA99", "#999933", "#661100"))+
+          geom_text(aes(label=Freq.x),hjust=-0.25, vjust=0.5, color="black", size=3)+
+          theme_minimal()+
+          theme(axis.title.x=element_blank(),
+                axis.text.x=element_blank(),
+                axis.ticks.x=element_blank(),
+                axis.title.y=element_blank(),
+                axis.text.y=element_blank(),
+                axis.ticks.y=element_blank())+
+          #geom_hline(yintercept=c(48.6), linetype="dashed")+
+          theme(legend.position = "none")+
+          ggtitle("   Your neighbourhood")
+        
+        
+        
+        p3 <- ggplot(tb, aes(x = Type, y = Freq.y))+
+          geom_col(aes(fill = Type))+ coord_flip()+ylim(0,40)+
+          #scale_fill_manual(breaks = c("MANAGERS, DIRECTORS AND SENIOR OFFICIALS",
+          #                            "PROFESSIONAL OCCUPATIONS",
+          #                             "ASSOCIATE PROFESSIONAL AND TECHNICAL OCCUPATIONS",
+          #                            "ADMINISTRATIVE AND SECRETARIAL OCCUPATIONS",
+          #                           "SKILLED TRADES OCCUPATIONS",
+          #                          "CARING, LEISURE AND OTHER SERVICE OCCUPATIONS",
+          #                         "SALES AND CUSTOMER SERVICE OCCUPATIONS",
+          #                        "PROCESS, PLANT AND MACHINE OPERATIVES",
+          #                       "ELEMENTARY OCCUPATIONS"), 
+          #           values=c("#88CCEE", "#CC6677", "#DDCC77", "#117733", 
+          #                   "#332288", "#AA4499", "#44AA99", "#999933", "#661100"))+
+        geom_text(aes(label=Freq.y),hjust=-0.25, vjust=0.5, color="black", size=3)+
+          theme_minimal()+
+          theme(axis.title.x=element_blank(),
+                axis.text.x=element_blank(),
+                axis.ticks.x=element_blank(),
+                axis.title.y=element_blank(),
+                axis.text.y=element_blank(),
+                axis.ticks.y=element_blank())+
+          #geom_hline(yintercept=c(48.6), linetype="dashed")+
+          theme(legend.position = "none")+
+          ggtitle("   Scotland")
+        
+        
+       
+        figure <- ggarrange(base, p2,p3,
+                            ncol = 3, nrow = 1)
+        
+        figure
+        
+        #str1<-paste0(tb$Freq.x[1]," ", tb$Type[1])
+        #str2<-paste0(tb$Freq.x[2]," ", tb$Type[2])
+        #str3<-paste0(tb$Freq.x[3]," ", tb$Type[3])
+        #str4<-paste0(tb$Freq.x[4]," ", tb$Type[4])
+        #str5<-paste0(tb$Freq.x[5]," ", tb$Type[5])
+        #str6<-paste0(tb$Freq.x[6]," ", tb$Type[6])
+        #str7<-paste0(tb$Freq.x[7]," ", tb$Type[7])
+        #str8<-paste0(tb$Freq.x[8]," ", tb$Type[8])
+        #str9<-paste0(tb$Freq.x[9]," ", tb$Type[9])
+        #str10<-paste0(tb$Freq.x[10]," ", tb$Type[10])
+        
+        #HTML(paste('<br/>',str1, str2, str3,str4, str5, str6,str7, str8, str9, str10, sep = '<br/>'))
       } else{
-        HTML(paste("No features within 20 minutes"))
+        
+        #HTML(paste("No features within 20 minutes"))
       }
     })
     
