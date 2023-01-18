@@ -27,7 +27,7 @@ shinyUI(
                   @import url('//fonts.googleapis.com/css?family=Roboto+Slab');
                   "))
   ),
-  tags$style(type="text/css", ".item-input {width:400px;
+  tags$style(type="text/css", ".item-input {width:300px;
                                 background-color: none;}"),
   tags$style(type="text/css", ".button {
   border: none;
@@ -94,7 +94,8 @@ shinyUI(
                     inputId = "str",
                     label = "",
                     value = "",
-                    placeholder = "Your Address here"), `data-proxy-click` = "goButton"),
+                    placeholder = "Your Address here"), 
+                   `data-proxy-click` = "goButton"),
                 f7Button(inputId="goButton",color = "blue", label = "Go", size="small"
                #f7Picker(
               #   inputId = "mypicker",
