@@ -35,6 +35,17 @@ Site <- sf::st_transform(Site, 27700)
 # pre-converteed Site but it's not working so keeping this in for now
 ScotlandComp<-read.csv("data/OSgreenspace/ScotlandFreq.csv")
 #Trees<-readRDS("data/EdinburghCouncil/Trees/trees.rds")
+
+
+##### NOT WORKING
+icons <- awesomeIcons(
+  icon        = "house",
+  iconColor   = "white",
+  library     = 'fa',
+  markerColor = "white"
+)
+
+
 BING <- function(str){
   u <- URLencode(paste0("http://dev.virtualearth.net/REST/v1/Locations?q=", str, "&maxResults=1&key=",Sys.getenv(c("BINGKEY"))))
   d <- getURL(u)
@@ -57,7 +68,7 @@ shinyServer(function(input, output) {
 
   output$map <- renderLeaflet({
     leaflet() %>%
-      addProviderTiles(providers$Stamen.TonerLite)        %>%
+      addProviderTiles(providers$CartoDB.DarkMatter)        %>%
       addScaleBar(position = c("bottomleft"))         %>%
       setView(lng =-4.2026, lat = 56.4907, zoom = 7) %>%
       addScaleBar(position = c("bottomleft"))%>%
@@ -240,12 +251,13 @@ observeEvent(input$goButton,{
     
     
 observe({
-      
+  
+    
       mapit  %>%  
         setView(lng =  long, lat = lat, zoom = 14) %>% 
-        addMarkers(lng=as.numeric(coords$long), lat=as.numeric(coords$lat)) %>% 
+        addMarkers(lng=as.numeric(coords$long), lat=as.numeric(coords$lat), icon = icons) %>% 
         addPolylines(data = isolines_line[2,],
-                     color = "#100c08",
+                     color = "white",
                      opacity=0.5,
                      weight=2,
                      popup = isolines$range, 
@@ -254,7 +266,7 @@ observe({
                     stroke=T,
                     weight=0.3,
                     smoothFactor = 0.2,
-                    fillOpacity = 0.5,
+                    fillOpacity = 0.65,
                     popup=popup,
                     #color="green",
                     color= ~pal(function.),
