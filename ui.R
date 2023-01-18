@@ -113,7 +113,7 @@ shinyUI(f7Page(
           intensity = 10,
           hover = TRUE,
           f7Card(
-            title = "How many are there?",
+            title = "How does your neighbourhood compare?",
             plotOutput("stats")
           )
         )
