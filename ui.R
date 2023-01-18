@@ -16,8 +16,10 @@ jscode <- '$(document).keyup(function(e) {
     $("#goButton").click();
 }});'
 
-shinyUI(f7Page(
+shinyUI(
+  f7Page(
   # header font
+  tags$head(includeHTML(("google-analytics.html"))),
   tags$style(type = "text/css", "#map {height: calc(100vh - 160px) !important;}"),
   tags$style(type = "text/css", "#Plot {height: calc(100vh - 160px) !important;}"),
   tags$head(
@@ -41,25 +43,25 @@ shinyUI(f7Page(
   padding-right: 15px;}"),
   # geolocation
   # get geolocation from user #
-  tags$script('
-  $(document).ready(function () {
-    navigator.geolocation.getCurrentPosition(onSuccess, onError);
+ # tags$script('
+#  $(document).ready(function () {
+#    navigator.geolocation.getCurrentPosition(onSuccess, onError);
 
-    function onError (err) {
-    Shiny.onInputChange("geolocation", false);
-    }
+ #   function onError (err) {
+#    Shiny.onInputChange("geolocation", false);
+#    }
     
-   function onSuccess (position) {
-      setTimeout(function () {
-          var coords = position.coords;
-          console.log(coords.latitude + ", " + coords.longitude);
-          Shiny.onInputChange("geolocation", true);
-          Shiny.onInputChange("lat", coords.latitude);
-          Shiny.onInputChange("long", coords.longitude);
-      }, 1100)
-  }
-  });
-            '),
+#   function onSuccess (position) {
+#      setTimeout(function () {
+#          var coords = position.coords;
+#          console.log(coords.latitude + ", " + coords.longitude);
+#          Shiny.onInputChange("geolocation", true);
+#          Shiny.onInputChange("lat", coords.latitude);
+#          Shiny.onInputChange("long", coords.longitude);
+#      }, 1100)
+ # }
+#  });
+ #           '),
   title = "My Neighbourhood",
   f7TabLayout(
     panels = tagList(
