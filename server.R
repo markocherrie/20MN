@@ -68,7 +68,7 @@ shinyServer(function(input, output) {
 
   output$map <- renderLeaflet({
     leaflet() %>%
-      addProviderTiles(providers$CartoDB.DarkMatter)        %>%
+      addProviderTiles(providers$Stamen.TonerLite)        %>%
       addScaleBar(position = c("bottomleft"))         %>%
       setView(lng =-4.2026, lat = 56.4907, zoom = 7) %>%
       addScaleBar(position = c("bottomleft"))%>%
@@ -257,7 +257,7 @@ observe({
         setView(lng =  long, lat = lat, zoom = 14) %>% 
         addMarkers(lng=as.numeric(coords$long), lat=as.numeric(coords$lat), icon = icons) %>% 
         addPolylines(data = isolines_line[2,],
-                     color = "white",
+                     color = "black",
                      opacity=0.5,
                      weight=2,
                      popup = isolines$range, 
