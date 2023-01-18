@@ -339,7 +339,7 @@ observe({
         
         
         figure <- ggarrange(base, p2,p3,
-                            ncol = 3, nrow = 1)
+                            ncol = 3, nrow = 1,widths = c(1, 2, 2))
         
         figure
         
