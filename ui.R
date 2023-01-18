@@ -101,7 +101,7 @@ shinyUI(f7Page(
               #   choices = c('Greenspaces', 'Trees', 'Bluespaces')
           #     )
           )),
-            leafletOutput("map")
+          withSpinner(leafletOutput("map"))
           )
         )
       ),

@@ -55,13 +55,31 @@ BING <- function(str){
 
 shinyServer(function(input, output) {
 
+  output$map <- renderLeaflet({
+    leaflet() %>%
+      addProviderTiles(providers$Stamen.TonerLite)        %>%
+      addScaleBar(position = c("bottomleft"))         %>%
+      setView(lng =-4.2026, lat = 56.4907, zoom = 7) %>%
+      addScaleBar(position = c("bottomleft"))%>%
+      addFullscreenControl() 
+  })
+  
+  
+  
 observeEvent(input$goButton,{
+  
+    mapit <- leafletProxy("map") 
+    mapit  %>% clearShapes() %>% clearMarkers() #%>%
 
     str   <- as.character(paste0(input$str, ", UK"))
+    
     map   <- BING(str)
     
     lat<-map[1]
     long<-map[2]
+    
+    mapit %>% 
+      setView(lng =  long, lat = lat, zoom = 14)
     
     coords<-data.frame(lat,long)
     coords_wgs <- st_as_sf(coords, coords = c("long", "lat"),
@@ -217,11 +235,9 @@ observeEvent(input$goButton,{
       (paste0(Siteswithinbufferandaccesspoints_20$function.))
     
     
-    output$map <- renderLeaflet({
+observe({
       
-      leaflet() %>%
-        addProviderTiles(providers$Stamen.TonerLite)        %>%
-        addScaleBar(position = c("bottomleft"))         %>%
+      mapit  %>%  
         setView(lng =  long, lat = lat, zoom = 14) %>% 
         addMarkers(lng=as.numeric(coords$long), lat=as.numeric(coords$lat)) %>% 
         addPolylines(data = isolines_line[2,],
@@ -286,8 +302,8 @@ observeEvent(input$goButton,{
         
         
         
-        p3 <- ggplot(tb, aes(x = Type, y = Freq.y))+
-          geom_col(aes(fill = Type))+ coord_flip()+ylim(0,40)+
+        p3 <- ggplot(tb, aes(x = Type, y = Perc))+
+          geom_col(aes(fill = Type))+ coord_flip()+ylim(0,50)+
           #scale_fill_manual(breaks = c("MANAGERS, DIRECTORS AND SENIOR OFFICIALS",
           #                            "PROFESSIONAL OCCUPATIONS",
           #                             "ASSOCIATE PROFESSIONAL AND TECHNICAL OCCUPATIONS",
