@@ -28,11 +28,11 @@ options(shiny.usecairo=T)
 set_key(Sys.getenv("HEREAPIKEY"))
 
 # data --- change this to local authority and nearby ones
-Accesspoint<-readRDS("data/OSgreenspace/data/AccessPoint.rds")
+#Accesspoint<-readRDS("data/OSgreenspace/data/AccessPoint.rds")
 # possibl
-Site<-readRDS("data/OSgreenspace/data/Site.rds")
-Site <- sf::st_transform(Site, 27700)
+#Site<-readRDS("data/OSgreenspace/data/Site.rds")
 # pre-converteed Site but it's not working so keeping this in for now
+LA<-read_sf("data/Local_Authority_Boundaries_-_Scotland/pub_las.shp")
 ScotlandComp<-read.csv("data/OSgreenspace/ScotlandFreq.csv")
 #Trees<-readRDS("data/EdinburghCouncil/Trees/trees.rds")
 
@@ -66,9 +66,9 @@ BING <- function(str){
 
 shinyServer(function(input, output) {
 
-  output$map <- renderLeaflet({
+output$map <- renderLeaflet({
     leaflet() %>%
-      addProviderTiles(providers$CartoDB.DarkMatter)        %>%
+      addProviderTiles(providers$Stamen.TonerLite)        %>%
       addScaleBar(position = c("bottomleft"))         %>%
       setView(lng =-4.2026, lat = 56.4907, zoom = 7) %>%
       addScaleBar(position = c("bottomleft"))%>%
@@ -81,28 +81,21 @@ observeEvent(input$goButton,{
   
     mapit <- leafletProxy("map") 
     mapit  %>% clearShapes() %>% clearMarkers() #%>%
-
     str   <- as.character(paste0(input$str, ", UK"))
-    
     map   <- BING(str)
-    
     lat<-map[1]
     long<-map[2]
-    
     mapit %>% 
       setView(lng =  long, lat = lat, zoom = 14)
-    
     coords<-data.frame(lat,long)
     coords_wgs <- st_as_sf(coords, coords = c("long", "lat"),
                            crs = 4326, dim = "XY")
     coords_BNG <- st_transform(coords_wgs, 27700)
     
     # cut site to size
-    BNGbuffer<-st_buffer(coords_BNG, 10000)
-    Site<-Site[BNGbuffer,]
+    BNGbuffer<-st_buffer(coords_BNG, 5000)
     
-    #coords_BNG_2km <- st_buffer(coords_BNG, 2000)
-    
+    # create the isolines
     isolines <- isoline(
       coords_wgs,
       datetime = Sys.time(),
@@ -124,6 +117,18 @@ observeEvent(input$goButton,{
     isolines_20_BNG <- st_transform(isolines_20, 27700)
     isolines_BNG <- st_transform(isolines, 27700)
     isolines_BNG
+    
+    
+  ### greenspace
+if(input$feature=="gre"){
+    Site<-do.call(rbind, lapply(paste0("data/OSgreenspace/LAdata/", LA[BNGbuffer,]$local_auth,".rds"), readRDS))
+   
+    # Site<-readRDS(paste0("data/OSgreenspace/LAdata/", LA[BNGbuffer,]$local_auth[1],".rds"))
+    
+    Site<-Site[BNGbuffer,]
+    Site <- sf::st_transform(Site, 27700)
+
+    #coords_BNG_2km <- st_buffer(coords_BNG, 2000)
     
     #### for the graph
     df<-data.frame(GStypes=unique(Site$function.))
@@ -181,9 +186,12 @@ observeEvent(input$goButton,{
     Siteswithinbuffer3 <- Siteswithinbuffer3[!Siteswithinbuffer3$GStypes %in% unique(Siteswithinbuffer2$GStypes),]
     Siteswithinbuffer3 <- Siteswithinbuffer3[!Siteswithinbuffer3$GStypes %in% unique(Siteswithinbuffer1$GStypes),]
     
-    Siteswithinbuffer1<-merge(Siteswithinbuffer1, n, by.x="GStypes", by.y="function.", all.x=T)
-    Siteswithinbuffer2<-merge(Siteswithinbuffer2, n2, by.x="GStypes", by.y="function.", all.x=T)
-    Siteswithinbuffer3<-merge(Siteswithinbuffer3, n3, by.x="GStypes", by.y="function.", all.x=T)
+    if(nrow(Siteswithinbuffer1)>0){
+    Siteswithinbuffer1<-merge(Siteswithinbuffer1, n, by.x="GStypes", by.y="function.", all.x=T)}
+    if(nrow(Siteswithinbuffer2)>0){
+    Siteswithinbuffer2<-merge(Siteswithinbuffer2, n2, by.x="GStypes", by.y="function.", all.x=T)}
+    if(nrow(Siteswithinbuffer3)>0){
+    Siteswithinbuffer3<-merge(Siteswithinbuffer3, n3, by.x="GStypes", by.y="function.", all.x=T)}
     
     dfadd<-rbind(Siteswithinbuffer1, Siteswithinbuffer2, Siteswithinbuffer3)
     df<-merge(df, dfadd, by="GStypes", all.x=T)
@@ -230,24 +238,57 @@ observeEvent(input$goButton,{
       benchdown<-floor(max(tb$Perccomp)*0.75)
       benchup<-ceiling(max(tb$Perccomp)*1.25)
       
+      # greenspace formatting
+      ###################
+      pal <- colorFactor(palette = 'Set1', domain = Siteswithinbufferandaccesspoints_20$function.) 
+      
+      # calculate area of spatial polygons sf object
+      Siteswithinbufferandaccesspoints_20$area <- st_area(Siteswithinbufferandaccesspoints_20)
+      Siteswithinbufferandaccesspoints_20 <- arrange(Siteswithinbufferandaccesspoints_20, -area)
+      
+      ### superscript in leaflet
+      popup <- 
+        (paste0(Siteswithinbufferandaccesspoints_20$function.))
       
       
       
     } else{
       return(Siteswithinbufferandaccesspoints_20)
+      
+      # greenspace formatting
+      ###################
+      pal <- colorFactor(palette = 'Set1', domain = Siteswithinbufferandaccesspoints_20$function.) 
+      
+      # calculate area of spatial polygons sf object
+      Siteswithinbufferandaccesspoints_20$area <- st_area(Siteswithinbufferandaccesspoints_20)
+      Siteswithinbufferandaccesspoints_20 <- arrange(Siteswithinbufferandaccesspoints_20, -area)
+      
+      ### superscript in leaflet
+      popup <- 
+        (paste0(Siteswithinbufferandaccesspoints_20$function.))
     }
+
+    
+}else if(input$feature=="blu"){
+  
+  Site<-do.call(rbind, lapply(paste0("data/bluespaces/lakes/LAdata/", LA[BNGbuffer,]$local_auth,".rds"), readRDS))
+  colnames(Site)[1]<-"id"
+  #Site$function.<-ifelse(Site$POLY_AREA_>5000, "Smaller lake", "Larger lake")
+  
+  
+  
+  
+  
+  
+  
+} else if(input$feature=="tra"){
+  
+  
+  
+}
     
     
-    ###################
-    pal <- colorFactor(palette = 'Set1', domain = Siteswithinbufferandaccesspoints_20$function.) 
-    
-    # calculate area of spatial polygons sf object
-    Siteswithinbufferandaccesspoints_20$area <- st_area(Siteswithinbufferandaccesspoints_20)
-    Siteswithinbufferandaccesspoints_20 <- arrange(Siteswithinbufferandaccesspoints_20, -area)
-    
-    ### superscript in leaflet
-    popup <- 
-      (paste0(Siteswithinbufferandaccesspoints_20$function.))
+
     
     
 observe({
@@ -257,9 +298,9 @@ observe({
         setView(lng =  long, lat = lat, zoom = 14) %>% 
         addMarkers(lng=as.numeric(coords$long), lat=as.numeric(coords$lat), icon = icons) %>% 
         addPolylines(data = isolines_line[2,],
-                     color = "white",
+                     color = "black",
                      opacity=0.5,
-                     weight=2,
+                     weight=3,
                      popup = isolines$range, 
                      group="20 minute walking distance") %>%
         addPolygons(data=Siteswithinbufferandaccesspoints_20,
@@ -269,7 +310,7 @@ observe({
                     fillOpacity = 0.65,
                     popup=popup,
                     #color="green",
-                    color= ~pal(function.),
+                    color= "#008000",
                     group = "Greenspace") %>%
         # Layers control allows the user to turn layers on and off
         addLayersControl(options = layersControlOptions(collapsed = T),
@@ -290,15 +331,15 @@ observe({
                                                 panel.grid.major = element_blank(),
                                                 panel.grid.minor = element_blank(),
                                                 axis.ticks.x=element_blank(),
-                                                axis.text.y=element_text(size=15, color="white"),
-                                                plot.background = element_rect(fill = "#1c1c1d"), 
-                                                panel.background = element_rect(fill = "#1c1c1d", colour="#1c1c1d"),
+                                                axis.text.y=element_text(size=15, color="#1c1c1d"),
+                                                plot.background = element_rect(fill = "white"), 
+                                                panel.background = element_rect(fill = "white", colour="white"),
                                                 plot.margin = unit(c(1.85,0.5,0.3,0),"cm")
           )+
           xlab("")
         
         p2 <- ggplot(tb, aes(x = Type, y = Perc.y))+
-          geom_col(aes(fill = Type))+ coord_flip()+ylim(0,100)+
+          geom_col(fill="#008000", alpha=0.6)+ coord_flip()+ylim(0,100)+
           #scale_fill_manual(breaks = c("MANAGERS, DIRECTORS AND SENIOR OFFICIALS",
           #                            "PROFESSIONAL OCCUPATIONS",
           #                             "ASSOCIATE PROFESSIONAL AND TECHNICAL OCCUPATIONS",
@@ -310,7 +351,7 @@ observe({
           #                       "ELEMENTARY OCCUPATIONS"), 
           #           values=c("#88CCEE", "#CC6677", "#DDCC77", "#117733", 
           #                   "#332288", "#AA4499", "#44AA99", "#999933", "#661100"))+
-        geom_text(aes(label=paste0(Perc.y,"%")),hjust=-0.25, vjust=0.5, color="white", size=6)+
+        geom_text(aes(label=paste0(Perc.y,"%")),hjust=-0.25, vjust=0.5, color="#1c1c1d", size=6)+
           theme_minimal()+
           theme(axis.title.x=element_blank(),
                 axis.text.x=element_blank(),
@@ -320,9 +361,9 @@ observe({
                 axis.ticks.y=element_blank(),
                 panel.grid.major = element_blank(),
                 panel.grid.minor = element_blank(),
-                plot.title = element_text(size = 15, face = "bold", color="white"),
-                plot.background = element_rect(fill = "#1c1c1d"), 
-                panel.background = element_rect(fill = "#1c1c1d", colour="#1c1c1d"),
+                plot.title = element_text(size = 15, face = "bold", color="#1c1c1d"),
+                plot.background = element_rect(fill = "white"), 
+                panel.background = element_rect(fill = "white", colour="white"),
                 panel.border = element_blank(),
                 plot.margin = unit(c(1,0,0,0),"cm")
           )+
@@ -333,7 +374,7 @@ observe({
         
         
         p3 <- ggplot(tb, aes(x = Type, y = Perc))+
-          geom_col(aes(fill = Type))+ coord_flip()+ylim(0,100)+
+          geom_col(fill="#008000", alpha=0.6)+ coord_flip()+ylim(0,100)+
           # put in custom colours here!!!
           #scale_fill_manual(breaks = c("MANAGERS, DIRECTORS AND SENIOR OFFICIALS",
           #                            "PROFESSIONAL OCCUPATIONS",
@@ -346,7 +387,7 @@ observe({
           #                       "ELEMENTARY OCCUPATIONS"), 
           #           values=c("#88CCEE", "#CC6677", "#DDCC77", "#117733", 
         #                   "#332288", "#AA4499", "#44AA99", "#999933", "#661100"))+
-        geom_text(aes(label=paste0(Perc, "%")),hjust=-0.25, vjust=0.5, color="white", size=6)+
+        geom_text(aes(label=paste0(Perc, "%")),hjust=-0.25, vjust=0.5, color="#1c1c1d", size=6)+
           theme_minimal()+
           theme(axis.title.x=element_blank(),
                 axis.text.x=element_blank(),
@@ -356,9 +397,9 @@ observe({
                 axis.ticks.y=element_blank(),
                 panel.grid.major = element_blank(),
                 panel.grid.minor = element_blank(),
-                plot.title = element_text(size = 15, face = "bold", color="white"),
-                plot.background = element_rect(fill = "#1c1c1d"), 
-                panel.background = element_rect(fill = "#1c1c1d", colour="#1c1c1d"),
+                plot.title = element_text(size = 15, face = "bold", color="#1c1c1d"),
+                plot.background = element_rect(fill = "white"), 
+                panel.background = element_rect(fill = "white", colour="white"),
                 panel.border = element_blank(),
                 plot.margin = unit(c(1,0,0,0),"cm"))+
           #geom_hline(yintercept=c(48.6), linetype="dashed")+
@@ -366,9 +407,13 @@ observe({
           ggtitle("   Scotland")
         
         
-        
+        # edit this when we have more data
         figure <- ggarrange(base, p2,p3,
-                            ncol = 3, nrow = 1, widths = c(1, 1.5, 1.5))
+                            #base, p2, p3,
+                            ncol = 3, 
+                            # add a row with new data
+                            nrow = 1, 
+                            widths = c(1, 1.5, 1.5))
         
         figure
         
@@ -390,7 +435,7 @@ observe({
       }
     })
     
-    output$Plot <- renderImage({
+output$Plot <- renderImage({
       
       Plot <- df %>%
         dplyr::arrange(GStypes) %>%
@@ -399,25 +444,25 @@ observe({
         geom_polygon(fill="#008000", alpha = 0.6)+
         coord_curvedpolar()+ 
         geom_texthline(yintercept = 10, label = "10 minutes", 
-                       hjust = 0, vjust = -0.2, color = "white")+
+                       hjust = 0, vjust = -0.2, color = "black")+
         geom_texthline(yintercept = 20, label = "20 minutes", 
-                       hjust = 0, vjust = -0.2, color = "white")+
+                       hjust = 0, vjust = -0.2, color = "black")+
         geom_texthline(yintercept = 30, label = "30 minutes", 
-                       hjust = 0, vjust = -0.2, color = "white") +
+                       hjust = 0, vjust = -0.2, color = "black") +
         geom_texthline(yintercept = 40, label = "Over 30 minutes", 
-                       hjust = 0, vjust = -0.2, color = "white") +
-        geom_point(aes(size = n), color="black")+
+                       hjust = 0, vjust = -0.2, color = "black") +
+        geom_point(aes(size = n), color="grey22", alpha=0.7)+
         labs(title=" ") +
         theme_bw() +
         theme(legend.position = "none",
               axis.text.y=element_blank(),
-              axis.text.x = element_text(colour= "white", vjust = -0.5, size =10, face ="bold"),
+              axis.text.x = element_text(colour= "black", vjust = -0.5, size =10, face ="bold"),
               axis.title.y=element_blank(),
               axis.title.x=element_blank(),
               axis.ticks = element_blank(),
               panel.grid  = element_blank(),
               plot.background = element_blank(),
-              panel.background = element_rect(fill = "#1c1c1d", colour = "#1c1c1d"),
+              panel.background = element_rect(fill = "white", colour = "white"),
               panel.grid.major = element_blank(),
               panel.grid.minor = element_blank(),
               strip.background = element_blank(),
@@ -432,7 +477,7 @@ observe({
           width = 360*10, 
           height = 360*10,
           res = 72*10,
-          bg = "#1c1c1d")
+          bg = "white")
       print(Plot)
       dev.off()
       
