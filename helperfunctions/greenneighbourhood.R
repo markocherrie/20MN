@@ -150,41 +150,57 @@ df$time<-as.numeric(df$time)
 
 
 #### VIz
-library(dplyr)
-df %>%
+
+Plot <- df %>%
   dplyr::arrange(GStypes) %>%
   ggplot(., aes(x = GStypes, y = time, group=1)) +
   # take out size=n if want the original
-  geom_point(aes(size = n), color="black")+
   geom_polygon(fill="#008000", alpha = 0.6)+
   coord_curvedpolar()+ 
   geom_texthline(yintercept = 10, label = "10 minutes", 
-                 hjust = 0, vjust = -0.2, color = "grey")+
+                 hjust = 0, vjust = -0.2, color = "white")+
   geom_texthline(yintercept = 20, label = "20 minutes", 
-                 hjust = 0, vjust = -0.2, color = "grey")+
+                 hjust = 0, vjust = -0.2, color = "white")+
   geom_texthline(yintercept = 30, label = "30 minutes", 
-                 hjust = 0, vjust = -0.2, color = "grey") +
+                 hjust = 0, vjust = -0.2, color = "white") +
   geom_texthline(yintercept = 40, label = "Over 30 minutes", 
-                 hjust = 0, vjust = -0.2, color = "grey") +
+                 hjust = 0, vjust = -0.2, color = "white") +
+  geom_point(aes(size = n), color="black")+
+  labs(title=" ") +
   theme_bw() +
   theme(legend.position = "none",
         axis.text.y=element_blank(),
-        axis.text.x = element_text(vjust = -1),
+        axis.text.x = element_text(colour= "white", vjust = -0.5, size =10, face ="bold"),
         axis.title.y=element_blank(),
         axis.title.x=element_blank(),
         axis.ticks = element_blank(),
         panel.grid  = element_blank(),
         plot.background = element_blank(),
+        panel.background = element_rect(fill = "#1c1c1d", colour = "#1c1c1d"),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         strip.background = element_blank(),
         panel.border = element_blank(),
-        strip.text.x = element_text(size = 16),
-        #axis.text.x = element_text(colour = mycolors)
-  )+
-  ggtitle(paste0(lat,",", long))
+        #strip.text.x = element_text(size = 16),
+        plot.title = element_text(size=18))
 
-ggsave(paste0("output/greenspacenearme",lat, long, ".png"))
+outfile <- tempfile(fileext = '.png')
+
+# Generate the PNG
+png(outfile, 
+    width = 360*10, 
+    height = 360*10,
+    res = 72*10,
+    bg = "#1c1c1d")
+print(Plot)
+dev.off()
+
+
+Plot
+#+
+ # ggtitle(paste0(lat,",", long))
+
+#ggsave(paste0("output/greenspacenearme",lat, long, ".png"))
 }
 
 greennearme(55.6531, -3.1936)

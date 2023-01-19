@@ -9,16 +9,12 @@ library(shinyWidgets)
 library(shinycssloaders)
 library(shinyMobile)
 
-# this isn't working - it's so the person can click enter rarther than
-# having to click on the go button
-jscode <- '$(document).keyup(function(e) {
-    if (e.key == "Enter") {
-    $("#goButton").click();
-}});'
 
 shinyUI(
   f7Page(
-  # header font
+  # so you can put in the address using enter
+  tags$script(src = "www/enter_button.js"),
+  # google analtics
   tags$head(includeHTML(("google-analytics.html"))),
   tags$style(type = "text/css", "#map {height: calc(100vh - 160px) !important;}"),
   tags$style(type = "text/css", "#Plot {height: calc(100vh - 160px) !important;}"),
@@ -66,8 +62,10 @@ shinyUI(
   f7TabLayout(
     panels = tagList(
       f7Panel(title = "About", side = "right", theme = "dark", 
-              "I made this so that people can find out more about the neighbourhood where
-              they live. ", 
+              "I made this so that people can find out more about the good stuff that is near where they live. 
+              
+              
+              The app uses data from Ordnance Survey Greenspace Open.", 
               effect = "reveal")
     ),
     navbar = f7Navbar(
