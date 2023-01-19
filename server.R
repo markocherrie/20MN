@@ -81,17 +81,12 @@ observeEvent(input$goButton,{
   
     mapit <- leafletProxy("map") 
     mapit  %>% clearShapes() %>% clearMarkers() #%>%
-
     str   <- as.character(paste0(input$str, ", UK"))
-    
     map   <- BING(str)
-    
     lat<-map[1]
     long<-map[2]
-    
     mapit %>% 
       setView(lng =  long, lat = lat, zoom = 14)
-    
     coords<-data.frame(lat,long)
     coords_wgs <- st_as_sf(coords, coords = c("long", "lat"),
                            crs = 4326, dim = "XY")
@@ -100,6 +95,10 @@ observeEvent(input$goButton,{
     # cut site to size
     BNGbuffer<-st_buffer(coords_BNG, 5000)
     
+    
+    
+  ### greenspace
+if(input$feature=="gre"){
     Site<-do.call(rbind, lapply(paste0("data/OSgreenspace/LAdata/", LA[BNGbuffer,]$local_auth,".rds"), readRDS))
    
     # Site<-readRDS(paste0("data/OSgreenspace/LAdata/", LA[BNGbuffer,]$local_auth[1],".rds"))
@@ -239,24 +238,53 @@ observeEvent(input$goButton,{
       benchdown<-floor(max(tb$Perccomp)*0.75)
       benchup<-ceiling(max(tb$Perccomp)*1.25)
       
+      # greenspace formatting
+      ###################
+      pal <- colorFactor(palette = 'Set1', domain = Siteswithinbufferandaccesspoints_20$function.) 
+      
+      # calculate area of spatial polygons sf object
+      Siteswithinbufferandaccesspoints_20$area <- st_area(Siteswithinbufferandaccesspoints_20)
+      Siteswithinbufferandaccesspoints_20 <- arrange(Siteswithinbufferandaccesspoints_20, -area)
+      
+      ### superscript in leaflet
+      popup <- 
+        (paste0(Siteswithinbufferandaccesspoints_20$function.))
       
       
       
     } else{
       return(Siteswithinbufferandaccesspoints_20)
+      
+      # greenspace formatting
+      ###################
+      pal <- colorFactor(palette = 'Set1', domain = Siteswithinbufferandaccesspoints_20$function.) 
+      
+      # calculate area of spatial polygons sf object
+      Siteswithinbufferandaccesspoints_20$area <- st_area(Siteswithinbufferandaccesspoints_20)
+      Siteswithinbufferandaccesspoints_20 <- arrange(Siteswithinbufferandaccesspoints_20, -area)
+      
+      ### superscript in leaflet
+      popup <- 
+        (paste0(Siteswithinbufferandaccesspoints_20$function.))
     }
+}else if(input$feature=="blu"){
+  
+  
+  
+  
+  
+  
+  
+  
+  
+} else if(input$feature=="tra"){
+  
+  
+  
+}
     
     
-    ###################
-    pal <- colorFactor(palette = 'Set1', domain = Siteswithinbufferandaccesspoints_20$function.) 
-    
-    # calculate area of spatial polygons sf object
-    Siteswithinbufferandaccesspoints_20$area <- st_area(Siteswithinbufferandaccesspoints_20)
-    Siteswithinbufferandaccesspoints_20 <- arrange(Siteswithinbufferandaccesspoints_20, -area)
-    
-    ### superscript in leaflet
-    popup <- 
-      (paste0(Siteswithinbufferandaccesspoints_20$function.))
+
     
     
 observe({
@@ -375,9 +403,13 @@ observe({
           ggtitle("   Scotland")
         
         
-        
-        figure <- ggarrange(base, p2,p3,base, p2, p3,
-                            ncol = 3, nrow = 2, widths = c(1, 1.5, 1.5))
+        # edit this when we have more data
+        figure <- ggarrange(base, p2,p3,
+                            #base, p2, p3,
+                            ncol = 3, 
+                            # add a row with new data
+                            nrow = 1, 
+                            widths = c(1, 1.5, 1.5))
         
         figure
         
