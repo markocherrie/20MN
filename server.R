@@ -94,6 +94,22 @@ observeEvent(input$goButton,{
     
     # cut site to size
     BNGbuffer<-st_buffer(coords_BNG, 5000)
+<<<<<<< HEAD
+=======
+    
+    
+    
+  ### greenspace
+if(input$feature=="gre"){
+    Site<-do.call(rbind, lapply(paste0("data/OSgreenspace/LAdata/", LA[BNGbuffer,]$local_auth,".rds"), readRDS))
+   
+    # Site<-readRDS(paste0("data/OSgreenspace/LAdata/", LA[BNGbuffer,]$local_auth[1],".rds"))
+    
+    Site<-Site[BNGbuffer,]
+    Site <- sf::st_transform(Site, 27700)
+
+    #coords_BNG_2km <- st_buffer(coords_BNG, 2000)
+>>>>>>> a454f532a892326cc4d69a7bb988a459fcd07cfe
     
     # create the isolines
     isolines <- isoline(
@@ -268,13 +284,17 @@ if(input$feature=="gre"){
         (paste0(Siteswithinbufferandaccesspoints_20$function.))
     }
 
+
     
 }else if(input$feature=="blu"){
   
   Site<-do.call(rbind, lapply(paste0("data/bluespaces/lakes/LAdata/", LA[BNGbuffer,]$local_auth,".rds"), readRDS))
   colnames(Site)[1]<-"id"
   #Site$function.<-ifelse(Site$POLY_AREA_>5000, "Smaller lake", "Larger lake")
+
+}else if(input$feature=="blu"){
   
+
   
   
   
