@@ -94,9 +94,7 @@ observeEvent(input$goButton,{
     
     # cut site to size
     BNGbuffer<-st_buffer(coords_BNG, 5000)
-<<<<<<< HEAD
-=======
-    
+
     
     
   ### greenspace
@@ -109,7 +107,6 @@ if(input$feature=="gre"){
     Site <- sf::st_transform(Site, 27700)
 
     #coords_BNG_2km <- st_buffer(coords_BNG, 2000)
->>>>>>> a454f532a892326cc4d69a7bb988a459fcd07cfe
     
     # create the isolines
     isolines <- isoline(
@@ -295,7 +292,12 @@ if(input$feature=="gre"){
 }else if(input$feature=="blu"){
   
 
+
+}else if(input$feature=="blu"){
   
+  
+  
+
   
   
   

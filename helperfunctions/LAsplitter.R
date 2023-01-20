@@ -13,7 +13,7 @@ saveRDS(LAsites, paste0("data/OSgreenspace/LAdata/", i,".rds"))
 
 
 #Site<-readRDS("data/OSgreenspace/LAdata/Clackmannanshire.rds")
-<<<<<<< HEAD
+
 
 
 Site<-read_sf("data/bluespaces/lakes/UK_Lakes_-_Lakes_Portal_(UKCEH).shp")
@@ -41,6 +41,5 @@ for(i in newlist){
   LAsites <- Site[LA1,]
   saveRDS(LAsites, paste0("data/bluespaces/lakes/LAdata/", i,".rds"))
 }
-
 
 
