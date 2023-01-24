@@ -23,7 +23,7 @@ f7Page(
     tags$style(HTML("
                   @import url('//fonts.googleapis.com/css?family=Roboto+Slab');
                   "))),
-    tags$style(type="text/css", ".item-input {width:300px;
+    tags$style(type="text/css", ".item-input {width:200px;
                                 background-color: none;}"),
     tags$style(type="text/css", ".button {
                     border: none;
@@ -84,16 +84,15 @@ f7Tabs(
           tabName = "Tab1",
           icon = f7Icon("map"),
           active = FALSE,
-        f7Card( title=
-              
-          f7Flex(
-            f7Text(  inputId = "str",
+        f7Card(
+          list(
+            f7Text(inputId = "str",
                       label = "",
                       value = "",
                       placeholder = "Your Address here"), 
             f7SmartSelect(
               "feature",
-              "Features to show:",
+              "Select Features",
               c("Greenspace" = "gre",
                 "Bluespaces" = "blu",
                 "Transport" = "tra"),
@@ -107,8 +106,8 @@ f7Tabs(
                      #   label = "",
                      #   choices = c('Greenspaces', 'Trees', 'Bluespaces')
                      #     )
-            )
-            ),
+            
+            )),
             f7Shadow(intensity = 10,
                      hover = TRUE,
               withSpinner(leafletOutput("map"))
