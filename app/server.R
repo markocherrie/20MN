@@ -34,7 +34,7 @@ Accesspoint<-readRDS("data/OSgreenspace/data/AccessPoint.rds")
 LA<-read_sf("data/Local_Authority_Boundaries_-_Scotland/pub_las.shp")
 ScotlandComp<-read.csv("data/OSgreenspace/ScotlandFreq.csv")
 #Trees<-readRDS("data/EdinburghCouncil/Trees/trees.rds")
-
+  
 
 ##### NOT WORKING
 icons <- awesomeIcons(
