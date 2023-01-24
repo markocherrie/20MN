@@ -29,12 +29,13 @@ set_key(Sys.getenv("HEREAPIKEY"))
 
 # data --- change this to local authority and nearby ones
 Accesspoint<-readRDS("data/OSgreenspace/data/AccessPoint.rds")
+# possible
 #Site<-readRDS("data/OSgreenspace/data/Site.rds")
 # pre-converteed Site but it's not working so keeping this in for now
 LA<-read_sf("data/Local_Authority_Boundaries_-_Scotland/pub_las.shp")
 ScotlandComp<-read.csv("data/OSgreenspace/ScotlandFreq.csv")
 #Trees<-readRDS("data/EdinburghCouncil/Trees/trees.rds")
-  
+
 
 ##### NOT WORKING
 icons <- awesomeIcons(

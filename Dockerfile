@@ -62,9 +62,6 @@ RUN Rscript -e 'install.packages("htmlwidgets", dependencies = TRUE)'
 RUN Rscript -e 'install.packages("shinyMobile", dependencies = TRUE)'
 RUN Rscript -e 'install.packages("ggpubr", dependencies = TRUE)'
 
-ENV HEREAPIKEY='-V2lLMbX0T77qvxSEhVt5oZ9Czu2MxHzM2SsUIIcKDs'
-ENV BINGKEY='AhN-K4JcOT-6mVUnuQcGI3np04FL7uA-acM8q2Ms99Qy-oZCCJgVdqUHX41IzUBs'
-
 # expose port
 #EXPOSE 3838
 # copy thlse app to the image
