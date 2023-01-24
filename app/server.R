@@ -28,7 +28,7 @@ options(shiny.usecairo=T)
 set_key(Sys.getenv("HEREAPIKEY"))
 
 # data --- change this to local authority and nearby ones
-#Accesspoint<-readRDS("data/OSgreenspace/data/AccessPoint.rds")
+Accesspoint<-readRDS("data/OSgreenspace/data/AccessPoint.rds")
 # possibl
 #Site<-readRDS("data/OSgreenspace/data/Site.rds")
 # pre-converteed Site but it's not working so keeping this in for now
@@ -102,9 +102,9 @@ if(input$feature=="gre"){
     Site<-do.call(rbind, lapply(paste0("data/OSgreenspace/LAdata/", LA[BNGbuffer,]$local_auth,".rds"), readRDS))
    
     # Site<-readRDS(paste0("data/OSgreenspace/LAdata/", LA[BNGbuffer,]$local_auth[1],".rds"))
-    
-    Site<-Site[BNGbuffer,]
     Site <- sf::st_transform(Site, 27700)
+    Site<-Site[BNGbuffer,]
+
 
     #coords_BNG_2km <- st_buffer(coords_BNG, 2000)
     
@@ -137,9 +137,8 @@ if(input$feature=="gre"){
     Site<-do.call(rbind, lapply(paste0("data/OSgreenspace/LAdata/", LA[BNGbuffer,]$local_auth,".rds"), readRDS))
    
     # Site<-readRDS(paste0("data/OSgreenspace/LAdata/", LA[BNGbuffer,]$local_auth[1],".rds"))
-    
-    Site<-Site[BNGbuffer,]
     Site <- sf::st_transform(Site, 27700)
+    Site <- Site[BNGbuffer,]
 
     #coords_BNG_2km <- st_buffer(coords_BNG, 2000)
     
