@@ -29,6 +29,8 @@ set_key(Sys.getenv("HEREAPIKEY"))
 
 # data --- change this to local authority and nearby ones
 Accesspoint<-readRDS("data/OSgreenspace/data/AccessPoint.rds")
+# edit out below to make more efficient - just to see if this works!
+#Accesspoint <- st_transform(Accesspoint, 27700)
 # possible
 #Site<-readRDS("data/OSgreenspace/data/Site.rds")
 # pre-converteed Site but it's not working so keeping this in for now
@@ -218,6 +220,11 @@ if(input$feature=="gre"){
     df$time<-as.numeric(df$time)
     
     # For the map
+
+    #Accesspoint_map<-st_join(Accesspoint, Site, by="id", left=F)
+    #Accesspoint_map<- Accesspoint %>% st_transform(., 4326)
+
+
     Siteswithinbuffer_20<-st_intersection(isolines_20_BNG, Site)
     Accesspoint$geometry<-NULL
     Siteswithinbuffer_20<-Siteswithinbuffer_20 %>% st_transform(., 4326)
@@ -334,9 +341,15 @@ observe({
                     #color="green",
                     color= "#008000",
                     group = "Greenspace") %>%
+       # addCircleMarkers(data=Accesspoint_map,
+       #            radius = 2,
+       #            color="#32CD32",
+       #            stroke = FALSE, 
+       #            fillOpacity = 0.5,
+       #            group = "Greenspace Access Point") %>%
         # Layers control allows the user to turn layers on and off
         addLayersControl(options = layersControlOptions(collapsed = T),
-                         overlayGroups = c("Greenspace","20 minute walking distance"))
+                         overlayGroups = c("Greenspace","Greenspace Access Point","20 minute walking distance"))
       
     })    
     

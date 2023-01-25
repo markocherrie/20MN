@@ -23,17 +23,17 @@ f7Page(
     tags$style(HTML("
                   @import url('//fonts.googleapis.com/css?family=Roboto+Slab');
                   "))),
-    tags$style(type="text/css", ".item-input {width:200px;
+    tags$style(type="text/css", ".item-input {width:300px;
                                 background-color: none;}"),
-    tags$style(type="text/css", ".button {
-                    border: none;
-                    color: white;
-                    text-align: center;
-                    text-decoration: none;
-                    display: inline-block;
-                    font-size: 16px;
-                    width:60px;
-                    height:30px;}"),
+#    tags$style(type="text/css", ".button {
+#                    border: none;
+#                    color: white;
+#                    text-align: center;
+#                    text-decoration: none;
+ #                   display: inline-block;
+#                    font-size: 16px;
+ ##                   width:60px;
+ #                   height:30px;}"),
     tags$style(type="text/css", ".panel-content{
                     padding-left: 15px;
                     padding-right: 15px;}"),
@@ -85,14 +85,14 @@ f7Tabs(
           icon = f7Icon("map"),
           active = FALSE,
         f7Card(
-          list(
+          footer=tagList(
             f7Text(inputId = "str",
                       label = "",
                       value = "",
                       placeholder = "Your Address here"), 
             f7SmartSelect(
               "feature",
-              "Select Features",
+              "Features:",
               c("Greenspace" = "gre",
                 "Bluespaces" = "blu",
                 "Transport" = "tra"),
@@ -108,10 +108,10 @@ f7Tabs(
                      #     )
             
             )),
-            f7Shadow(intensity = 10,
-                     hover = TRUE,
-              withSpinner(leafletOutput("map"))
-            )
+            #f7Shadow(intensity = 10,
+            #         hover = TRUE,
+              leafletOutput("map")
+            #)
           )
         ),
         f7Tab(
