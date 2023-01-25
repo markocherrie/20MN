@@ -1,8 +1,4 @@
 To do
 
-1. Make the greenspace dot bigger based on how many of the features are within x minutes
-2. Repeat greenspace viz but for transport
-3. Put the greenspace code into the r shiny app
-
-
-4. add a link in the popup which helps you direct to the feature
+1. Repeat greenspace viz but for bluespaces
+2. Add a link in the google maps link popup which helps you direct to the greenspace feature accesspoint
