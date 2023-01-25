@@ -2,6 +2,7 @@
 
 Site<-readRDS("data/OSgreenspace/data/Site.rds")
 
+
 library(sf)
 LA<-read_sf("data/Local_Authority_Boundaries_-_Scotland/pub_las.shp")
 
@@ -43,3 +44,15 @@ for(i in newlist){
 }
 
 
+
+Site<-readRDS("data/OSgreenspace/data/AccessPoint.rds")
+
+
+library(sf)
+LA<-read_sf("data/Local_Authority_Boundaries_-_Scotland/pub_las.shp")
+
+for(i in unique(LA$local_auth)){
+LA1<-LA[LA$local_auth==i,]
+LAsites <- Site[LA1,]
+saveRDS(LAsites, paste0("data/OSgreenspace/LAdata_accesspoint/", i,".rds"))
+}
