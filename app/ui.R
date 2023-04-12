@@ -16,8 +16,8 @@ f7Page(
     tags$script(src = "www/enter_button.js"),
     # google analytics
     tags$head(includeHTML(("google-analytics.html"))),
-    tags$style(type = "text/css", "#map {height: calc(100vh - 160px) !important;}"),
-    tags$style(type = "text/css", "#Plot {height: calc(100vh - 160px) !important;}"),
+    tags$style(type = "text/css", "#map {height: calc(90vh - 160px) !important;}"),
+    tags$style(type = "text/css", "#Plot {height: calc(90vh - 160px) !important;}"),
     tags$head(
     tags$style(HTML("
                   @import url('//fonts.googleapis.com/css?family=Roboto+Slab');
@@ -93,8 +93,8 @@ f7Tabs(
               "feature",
               "Features:",
               c("Greenspace" = "gre",
-                "Bluespaces" = "blu",
-                "Transport" = "tra"),
+                "Bluespaces" = "blu"
+                ),
               openIn = "sheet",
               multiple = FALSE
             ),

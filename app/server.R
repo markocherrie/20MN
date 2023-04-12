@@ -303,18 +303,7 @@ shinyServer(function(input, output) {
       }else if(input$feature=="blu"){
         
         
-        
-        
-        
-        
-        
-        
-        
-      } else if(input$feature=="tra"){
-        
-        
-        
-      }
+      } 
       
     }
     
