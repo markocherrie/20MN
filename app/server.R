@@ -17,7 +17,7 @@ library(sf)
 # install.packages("hereR")
 library(hereR)
 library(geomtextpath)
-library(Cairo)
+#library(Cairo)
 library(htmlwidgets)
 
 library(ggpubr)

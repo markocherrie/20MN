@@ -9,7 +9,6 @@ library(shinyWidgets)
 library(shinycssloaders)
 library(shinyMobile)
 
-
 shinyUI(
 
 f7Page(
