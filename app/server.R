@@ -17,14 +17,14 @@ library(sf)
 # install.packages("hereR")
 library(hereR)
 library(geomtextpath)
-library(Cairo)
+#library(Cairo)
 library(htmlwidgets)
 
 library(ggpubr)
 
 #readRenviron("~/.Renviron")
 
-options(shiny.usecairo=T)
+#options(shiny.usecairo=T)
 set_key(Sys.getenv("HEREAPIKEY"))
 
 # data --- change this to local authority and nearby ones
@@ -35,6 +35,7 @@ Accesspoint<-readRDS("data/OSgreenspace/data/AccessPoint.rds")
 #Site<-readRDS("data/OSgreenspace/data/Site.rds")
 # pre-converteed Site but it's not working so keeping this in for now
 LA<-read_sf("data/Local_Authority_Boundaries_-_Scotland/pub_las.shp")
+
 ScotlandComp<-read.csv("data/OSgreenspace/ScotlandFreq.csv")
 #Trees<-readRDS("data/EdinburghCouncil/Trees/trees.rds")
 
@@ -67,8 +68,8 @@ BING <- function(str){
 
 
 shinyServer(function(input, output) {
-
-output$map <- renderLeaflet({
+  
+  output$map <- renderLeaflet({
     leaflet() %>%
       addProviderTiles(providers$Stamen.TonerLite)        %>%
       addScaleBar(position = c("bottomleft"))         %>%
@@ -79,8 +80,8 @@ output$map <- renderLeaflet({
   
   
   
-observeEvent(input$goButton,{
-  
+  observeEvent(input$goButton,{
+    
     mapit <- leafletProxy("map") 
     mapit  %>% clearShapes() %>% clearMarkers() #%>%
     str   <- as.character(paste0(input$str, ", UK"))
@@ -96,233 +97,233 @@ observeEvent(input$goButton,{
     
     # cut site to size
     BNGbuffer<-st_buffer(coords_BNG, 5000)
-
     
     
-  ### greenspace
-if(input$feature=="gre"){
-    Site<-do.call(rbind, lapply(paste0("data/OSgreenspace/LAdata/", LA[BNGbuffer,]$local_auth,".rds"), readRDS))
-   
-    # Site<-readRDS(paste0("data/OSgreenspace/LAdata/", LA[BNGbuffer,]$local_auth[1],".rds"))
-    Site <- sf::st_transform(Site, 27700)
-    Site<-Site[BNGbuffer,]
-
-
-    #coords_BNG_2km <- st_buffer(coords_BNG, 2000)
     
-    # create the isolines
-    isolines <- isoline(
-      coords_wgs,
-      datetime = Sys.time(),
-      arrival = FALSE,
-      range = seq(10, 30, 10) * 60,
-      range_type = "time",
-      routing_mode = "fast",
-      transport_mode = "pedestrian",
-      traffic = TRUE,
-      optimize = "balanced",
-      consumption_model = NULL,
-      aggregate = FALSE,
-      url_only = FALSE
-    )%>% 
-      #mutate(name = paste0((range - 600) / 60," to ", range / 60, " mins"))
-      mutate(name = paste0("0 to ", range / 60, " mins"))
-    
-    isolines_20<-isolines[2,]
-    isolines_20_BNG <- st_transform(isolines_20, 27700)
-    isolines_BNG <- st_transform(isolines, 27700)
-    isolines_BNG
-    
-    
-  ### greenspace
-if(input$feature=="gre"){
-    Site<-do.call(rbind, lapply(paste0("data/OSgreenspace/LAdata/", LA[BNGbuffer,]$local_auth,".rds"), readRDS))
-   
-    # Site<-readRDS(paste0("data/OSgreenspace/LAdata/", LA[BNGbuffer,]$local_auth[1],".rds"))
-    Site <- sf::st_transform(Site, 27700)
-    Site <- Site[BNGbuffer,]
-
-    #coords_BNG_2km <- st_buffer(coords_BNG, 2000)
-    
-    #### for the graph
-    df<-data.frame(GStypes=unique(Site$function.))
-    Siteswithinbuffer1<-Site[(unlist(st_intersects(isolines_BNG[1,], Site))),]
-    Siteswithinbuffer1$name<-"0 to 10 mins"
-    Siteswithinbuffer2<-Site[(unlist(st_intersects(isolines_BNG[2,], Site))),]
-    Siteswithinbuffer2$name<-"0 to 20 mins"
-    Siteswithinbuffer3<-Site[(unlist(st_intersects(isolines_BNG[3,], Site))),]
-    Siteswithinbuffer3$name<-"0 to 30 mins"
-    Siteswithinbuffer2 <- Siteswithinbuffer2[!Siteswithinbuffer2$id %in% unique(Siteswithinbuffer1$id),]
-    Siteswithinbuffer3 <- Siteswithinbuffer3[!Siteswithinbuffer3$id %in% unique(Siteswithinbuffer2$id),]
-    
-    Siteswithinbuffer1$geometry<-NULL
-    Siteswithinbuffer2$geometry<-NULL
-    Siteswithinbuffer3$geometry<-NULL
-    
-    # making sure that we don't have empty dataframe
-    if(nrow(Siteswithinbuffer1)>0){
-      n<-Siteswithinbuffer1 %>%
-        count(function.)
-      Siteswithinbuffer1<-as.data.frame(unique(Siteswithinbuffer1[,c("function.")]))
-      Siteswithinbuffer1$time<-10
-      colnames(Siteswithinbuffer1)[1]<-"GStypes"
-    }else{
-      colnames(Siteswithinbuffer1)[8]<-"GStypes"
-      n<- data.frame("function."=character(),
-                     "n"=numeric())
-    }
-    
-    if(nrow(Siteswithinbuffer2)>0){
-      n2<-Siteswithinbuffer2 %>%
-        count(function.)
-      Siteswithinbuffer2<-as.data.frame(unique(Siteswithinbuffer2[,c("function.")]))
-      Siteswithinbuffer2$time<-20
-      colnames(Siteswithinbuffer2)[1]<-"GStypes"
-    }else{
-      colnames(Siteswithinbuffer2)[8]<-"GStypes"
-      n2<- data.frame("function."=character(),
-                      "n"=numeric())
-    }
-    
-    if(nrow(Siteswithinbuffer3)>0){
-      n3<-Siteswithinbuffer3 %>%
-        count(function.)
-      Siteswithinbuffer3<-as.data.frame(unique(Siteswithinbuffer3[,c("function.")]))
-      Siteswithinbuffer3$time<-30
-      colnames(Siteswithinbuffer3)[1]<-"GStypes"
-    }else{
-      colnames(Siteswithinbuffer3)[8]<-"GStypes"
-      n3<- data.frame("function."=character(),
-                      "n"=numeric())
-    }
-    
-    Siteswithinbuffer2 <- Siteswithinbuffer2[!Siteswithinbuffer2$GStypes %in% unique(Siteswithinbuffer1$GStypes),]
-    Siteswithinbuffer3 <- Siteswithinbuffer3[!Siteswithinbuffer3$GStypes %in% unique(Siteswithinbuffer2$GStypes),]
-    Siteswithinbuffer3 <- Siteswithinbuffer3[!Siteswithinbuffer3$GStypes %in% unique(Siteswithinbuffer1$GStypes),]
-    
-    if(nrow(Siteswithinbuffer1)>0){
-    Siteswithinbuffer1<-merge(Siteswithinbuffer1, n, by.x="GStypes", by.y="function.", all.x=T)}
-    if(nrow(Siteswithinbuffer2)>0){
-    Siteswithinbuffer2<-merge(Siteswithinbuffer2, n2, by.x="GStypes", by.y="function.", all.x=T)}
-    if(nrow(Siteswithinbuffer3)>0){
-    Siteswithinbuffer3<-merge(Siteswithinbuffer3, n3, by.x="GStypes", by.y="function.", all.x=T)}
-    
-    dfadd<-rbind(Siteswithinbuffer1, Siteswithinbuffer2, Siteswithinbuffer3)
-    df<-merge(df, dfadd, by="GStypes", all.x=T)
-    df$time[is.na(df$time)]<-"40"
-    # could change this to within 5km....
-    df$n[is.na(df$n)]<-"1"
-    df$n<-as.numeric(df$n)
-    df$GStypes[df$GStypes=="Allotments Or Community Growing Spaces"]<-"Allotments"
-    df$GStypes[df$GStypes=="Public Park Or Garden"]<-"Park/Gardens"
-    rowadd<-c("Your location", "0", "1")
-    df<-rbind(df, rowadd)
-    df$time<-as.numeric(df$time)
-    
-    # For the map
-
-    #Accesspoint_map<-st_join(Accesspoint, Site, by="id", left=F)
-    #Accesspoint_map<- Accesspoint %>% st_transform(., 4326)
-
-
-    Siteswithinbuffer_20<-st_intersection(isolines_20_BNG, Site)
-    Accesspoint$geometry<-NULL
-    Siteswithinbuffer_20<-Siteswithinbuffer_20 %>% st_transform(., 4326)
-    Siteswithinbufferandaccesspoints_20<-merge(Siteswithinbuffer_20, Accesspoint, by="id", all.x=T)
-    Siteswithinbufferandaccesspoints_20 <- st_zm(Siteswithinbufferandaccesspoints_20, drop = T, what = "ZM")
-    
-    # Create a color palette 
-    iso_1.pal <- colorFactor("Reds", isolines$range)
-    
-    
-    # arrange so closest is top
-    isolines<-isolines %>% dplyr::arrange(-range)
-    isolines_line = st_cast(isolines,"LINESTRING")
-    
-    
-    if(nrow(Siteswithinbufferandaccesspoints_20)>0){
-      tb<-as.data.frame(table(Siteswithinbufferandaccesspoints_20$function.))
-      if(nrow(tb)==0){
-        tb<-data.frame (Type  = c(""),
-                        Freq = c(""))
+    ### greenspace
+    if(input$feature=="gre"){
+      Site<-do.call(rbind, lapply(paste0("data/OSgreenspace/LAdata/", LA[BNGbuffer,]$local_auth,".rds"), readRDS))
+      
+      # Site<-readRDS(paste0("data/OSgreenspace/LAdata/", LA[BNGbuffer,]$local_auth[1],".rds"))
+      Site <- sf::st_transform(Site, 27700)
+      Site<-Site[BNGbuffer,]
+      
+      
+      #coords_BNG_2km <- st_buffer(coords_BNG, 2000)
+      
+      # create the isolines
+      isolines <- isoline(
+        coords_wgs,
+        datetime = Sys.time(),
+        arrival = FALSE,
+        range = seq(10, 30, 10) * 60,
+        range_type = "time",
+        routing_mode = "fast",
+        transport_mode = "pedestrian",
+        traffic = TRUE,
+        optimize = "balanced",
+        consumption_model = NULL,
+        aggregate = FALSE,
+        url_only = FALSE
+      )%>% 
+        #mutate(name = paste0((range - 600) / 60," to ", range / 60, " mins"))
+        mutate(name = paste0("0 to ", range / 60, " mins"))
+      
+      isolines_20<-isolines[2,]
+      isolines_20_BNG <- st_transform(isolines_20, 27700)
+      isolines_BNG <- st_transform(isolines, 27700)
+      isolines_BNG
+      
+      
+      ### greenspace
+      if(input$feature=="gre"){
+        Site<-do.call(rbind, lapply(paste0("data/OSgreenspace/LAdata/", LA[BNGbuffer,]$local_auth,".rds"), readRDS))
+        
+        # Site<-readRDS(paste0("data/OSgreenspace/LAdata/", LA[BNGbuffer,]$local_auth[1],".rds"))
+        Site <- sf::st_transform(Site, 27700)
+        Site <- Site[BNGbuffer,]
+        
+        #coords_BNG_2km <- st_buffer(coords_BNG, 2000)
+        
+        #### for the graph
+        df<-data.frame(GStypes=unique(Site$function.))
+        Siteswithinbuffer1<-Site[(unlist(st_intersects(isolines_BNG[1,], Site))),]
+        Siteswithinbuffer1$name<-"0 to 10 mins"
+        Siteswithinbuffer2<-Site[(unlist(st_intersects(isolines_BNG[2,], Site))),]
+        Siteswithinbuffer2$name<-"0 to 20 mins"
+        Siteswithinbuffer3<-Site[(unlist(st_intersects(isolines_BNG[3,], Site))),]
+        Siteswithinbuffer3$name<-"0 to 30 mins"
+        Siteswithinbuffer2 <- Siteswithinbuffer2[!Siteswithinbuffer2$id %in% unique(Siteswithinbuffer1$id),]
+        Siteswithinbuffer3 <- Siteswithinbuffer3[!Siteswithinbuffer3$id %in% unique(Siteswithinbuffer2$id),]
+        
+        Siteswithinbuffer1$geometry<-NULL
+        Siteswithinbuffer2$geometry<-NULL
+        Siteswithinbuffer3$geometry<-NULL
+        
+        # making sure that we don't have empty dataframe
+        if(nrow(Siteswithinbuffer1)>0){
+          n<-Siteswithinbuffer1 %>%
+            count(function.)
+          Siteswithinbuffer1<-as.data.frame(unique(Siteswithinbuffer1[,c("function.")]))
+          Siteswithinbuffer1$time<-10
+          colnames(Siteswithinbuffer1)[1]<-"GStypes"
+        }else{
+          colnames(Siteswithinbuffer1)[8]<-"GStypes"
+          n<- data.frame("function."=character(),
+                         "n"=numeric())
+        }
+        
+        if(nrow(Siteswithinbuffer2)>0){
+          n2<-Siteswithinbuffer2 %>%
+            count(function.)
+          Siteswithinbuffer2<-as.data.frame(unique(Siteswithinbuffer2[,c("function.")]))
+          Siteswithinbuffer2$time<-20
+          colnames(Siteswithinbuffer2)[1]<-"GStypes"
+        }else{
+          colnames(Siteswithinbuffer2)[8]<-"GStypes"
+          n2<- data.frame("function."=character(),
+                          "n"=numeric())
+        }
+        
+        if(nrow(Siteswithinbuffer3)>0){
+          n3<-Siteswithinbuffer3 %>%
+            count(function.)
+          Siteswithinbuffer3<-as.data.frame(unique(Siteswithinbuffer3[,c("function.")]))
+          Siteswithinbuffer3$time<-30
+          colnames(Siteswithinbuffer3)[1]<-"GStypes"
+        }else{
+          colnames(Siteswithinbuffer3)[8]<-"GStypes"
+          n3<- data.frame("function."=character(),
+                          "n"=numeric())
+        }
+        
+        Siteswithinbuffer2 <- Siteswithinbuffer2[!Siteswithinbuffer2$GStypes %in% unique(Siteswithinbuffer1$GStypes),]
+        Siteswithinbuffer3 <- Siteswithinbuffer3[!Siteswithinbuffer3$GStypes %in% unique(Siteswithinbuffer2$GStypes),]
+        Siteswithinbuffer3 <- Siteswithinbuffer3[!Siteswithinbuffer3$GStypes %in% unique(Siteswithinbuffer1$GStypes),]
+        
+        if(nrow(Siteswithinbuffer1)>0){
+          Siteswithinbuffer1<-merge(Siteswithinbuffer1, n, by.x="GStypes", by.y="function.", all.x=T)}
+        if(nrow(Siteswithinbuffer2)>0){
+          Siteswithinbuffer2<-merge(Siteswithinbuffer2, n2, by.x="GStypes", by.y="function.", all.x=T)}
+        if(nrow(Siteswithinbuffer3)>0){
+          Siteswithinbuffer3<-merge(Siteswithinbuffer3, n3, by.x="GStypes", by.y="function.", all.x=T)}
+        
+        dfadd<-rbind(Siteswithinbuffer1, Siteswithinbuffer2, Siteswithinbuffer3)
+        df<-merge(df, dfadd, by="GStypes", all.x=T)
+        df$time[is.na(df$time)]<-"40"
+        # could change this to within 5km....
+        df$n[is.na(df$n)]<-"1"
+        df$n<-as.numeric(df$n)
+        df$GStypes[df$GStypes=="Allotments Or Community Growing Spaces"]<-"Allotments"
+        df$GStypes[df$GStypes=="Public Park Or Garden"]<-"Park/Gardens"
+        rowadd<-c("Your location", "0", "1")
+        df<-rbind(df, rowadd)
+        df$time<-as.numeric(df$time)
+        
+        # For the map
+        
+        #Accesspoint_map<-st_join(Accesspoint, Site, by="id", left=F)
+        #Accesspoint_map<- Accesspoint %>% st_transform(., 4326)
+        
+        
+        Siteswithinbuffer_20<-st_intersection(isolines_20_BNG, Site)
+        Accesspoint$geometry<-NULL
+        Siteswithinbuffer_20<-Siteswithinbuffer_20 %>% st_transform(., 4326)
+        Siteswithinbufferandaccesspoints_20<-merge(Siteswithinbuffer_20, Accesspoint, by="id", all.x=T)
+        Siteswithinbufferandaccesspoints_20 <- st_zm(Siteswithinbufferandaccesspoints_20, drop = T, what = "ZM")
+        
+        # Create a color palette 
+        iso_1.pal <- colorFactor("Reds", isolines$range)
+        
+        
+        # arrange so closest is top
+        isolines<-isolines %>% dplyr::arrange(-range)
+        isolines_line = st_cast(isolines,"LINESTRING")
+        
+        
+        if(nrow(Siteswithinbufferandaccesspoints_20)>0){
+          tb<-as.data.frame(table(Siteswithinbufferandaccesspoints_20$function.))
+          if(nrow(tb)==0){
+            tb<-data.frame (Type  = c(""),
+                            Freq = c(""))
+          }
+          colnames(tb)<-c("Type", "Freq")
+          tb<-merge(tb, ScotlandComp, by=c("Type"), all.y=T)
+          tb$Freq.x[is.na(tb$Freq.x)]<-0
+          tb$Type<-as.character(tb$Type)
+          tb$Type[tb$Type=="Allotments Or Community Growing Spaces"]<-"Allotments"
+          tb$Type[tb$Type=="Public Park Or Garden"]<-"Public Park/Garden"
+          tb$Perc.y<-round(tb$Freq.x/sum(tb$Freq.x)*100)
+          tb$Perccomp<-tb$Perc.y/tb$Perc
+          benchdown<-floor(max(tb$Perccomp)*0.75)
+          benchup<-ceiling(max(tb$Perccomp)*1.25)
+          
+          # greenspace formatting
+          ###################
+          pal <- colorFactor(palette = 'Set1', domain = Siteswithinbufferandaccesspoints_20$function.) 
+          
+          # calculate area of spatial polygons sf object
+          Siteswithinbufferandaccesspoints_20$area <- st_area(Siteswithinbufferandaccesspoints_20)
+          Siteswithinbufferandaccesspoints_20 <- arrange(Siteswithinbufferandaccesspoints_20, -area)
+          
+          ### superscript in leaflet
+          popup <- 
+            (paste0(Siteswithinbufferandaccesspoints_20$function.))
+          
+          
+          
+        } else{
+          return(Siteswithinbufferandaccesspoints_20)
+          
+          # greenspace formatting
+          ###################
+          pal <- colorFactor(palette = 'Set1', domain = Siteswithinbufferandaccesspoints_20$function.) 
+          
+          # calculate area of spatial polygons sf object
+          Siteswithinbufferandaccesspoints_20$area <- st_area(Siteswithinbufferandaccesspoints_20)
+          Siteswithinbufferandaccesspoints_20 <- arrange(Siteswithinbufferandaccesspoints_20, -area)
+          
+          ### superscript in leaflet
+          popup <- 
+            (paste0(Siteswithinbufferandaccesspoints_20$function.))
+        }
+        
+        
+        
+      }else if(input$feature=="blu"){
+        
+        Site<-do.call(rbind, lapply(paste0("data/bluespaces/lakes/LAdata/", LA[BNGbuffer,]$local_auth,".rds"), readRDS))
+        colnames(Site)[1]<-"id"
+        #Site$function.<-ifelse(Site$POLY_AREA_>5000, "Smaller lake", "Larger lake")
+        
+      }else if(input$feature=="blu"){
+        
+        
+        
+      }else if(input$feature=="blu"){
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      } else if(input$feature=="tra"){
+        
+        
+        
       }
-      colnames(tb)<-c("Type", "Freq")
-      tb<-merge(tb, ScotlandComp, by=c("Type"), all.y=T)
-      tb$Freq.x[is.na(tb$Freq.x)]<-0
-      tb$Type<-as.character(tb$Type)
-      tb$Type[tb$Type=="Allotments Or Community Growing Spaces"]<-"Allotments"
-      tb$Type[tb$Type=="Public Park Or Garden"]<-"Public Park/Garden"
-      tb$Perc.y<-round(tb$Freq.x/sum(tb$Freq.x)*100)
-      tb$Perccomp<-tb$Perc.y/tb$Perc
-      benchdown<-floor(max(tb$Perccomp)*0.75)
-      benchup<-ceiling(max(tb$Perccomp)*1.25)
       
-      # greenspace formatting
-      ###################
-      pal <- colorFactor(palette = 'Set1', domain = Siteswithinbufferandaccesspoints_20$function.) 
-      
-      # calculate area of spatial polygons sf object
-      Siteswithinbufferandaccesspoints_20$area <- st_area(Siteswithinbufferandaccesspoints_20)
-      Siteswithinbufferandaccesspoints_20 <- arrange(Siteswithinbufferandaccesspoints_20, -area)
-      
-      ### superscript in leaflet
-      popup <- 
-        (paste0(Siteswithinbufferandaccesspoints_20$function.))
-      
-      
-      
-    } else{
-      return(Siteswithinbufferandaccesspoints_20)
-      
-      # greenspace formatting
-      ###################
-      pal <- colorFactor(palette = 'Set1', domain = Siteswithinbufferandaccesspoints_20$function.) 
-      
-      # calculate area of spatial polygons sf object
-      Siteswithinbufferandaccesspoints_20$area <- st_area(Siteswithinbufferandaccesspoints_20)
-      Siteswithinbufferandaccesspoints_20 <- arrange(Siteswithinbufferandaccesspoints_20, -area)
-      
-      ### superscript in leaflet
-      popup <- 
-        (paste0(Siteswithinbufferandaccesspoints_20$function.))
     }
-
-
-    
-}else if(input$feature=="blu"){
-  
-  Site<-do.call(rbind, lapply(paste0("data/bluespaces/lakes/LAdata/", LA[BNGbuffer,]$local_auth,".rds"), readRDS))
-  colnames(Site)[1]<-"id"
-  #Site$function.<-ifelse(Site$POLY_AREA_>5000, "Smaller lake", "Larger lake")
-
-}else if(input$feature=="blu"){
-  
-
-
-}else if(input$feature=="blu"){
-  
-  
-  
-
-  
-  
-  
-  
-  
-} else if(input$feature=="tra"){
-  
-  
-  
-}
-  
-}
-    
-
     
     
-observe({
-  
     
+    
+    observe({
+      
+      
       mapit  %>%  
         setView(lng =  long, lat = lat, zoom = 14) %>% 
         addMarkers(lng=as.numeric(coords$long), lat=as.numeric(coords$lat), icon = icons) %>% 
@@ -341,12 +342,12 @@ observe({
                     #color="green",
                     color= "#008000",
                     group = "Greenspace") %>%
-       # addCircleMarkers(data=Accesspoint_map,
-       #            radius = 2,
-       #            color="#32CD32",
-       #            stroke = FALSE, 
-       #            fillOpacity = 0.5,
-       #            group = "Greenspace Access Point") %>%
+        # addCircleMarkers(data=Accesspoint_map,
+        #            radius = 2,
+        #            color="#32CD32",
+        #            stroke = FALSE, 
+        #            fillOpacity = 0.5,
+        #            group = "Greenspace Access Point") %>%
         # Layers control allows the user to turn layers on and off
         addLayersControl(options = layersControlOptions(collapsed = T),
                          overlayGroups = c("Greenspace","Greenspace Access Point","20 minute walking distance"))
@@ -470,7 +471,7 @@ observe({
       }
     })
     
-output$Plot <- renderImage({
+    output$Plot <- renderImage({
       
       Plot <- df %>%
         dplyr::arrange(GStypes) %>%
